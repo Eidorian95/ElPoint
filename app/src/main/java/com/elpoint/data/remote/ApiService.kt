@@ -12,6 +12,9 @@ interface ApiService {
     ): ForecastResponse
 }
 
-class ForecastResponse {
 
-}
+data class ForecastResponse(
+    val temperature: Double,
+    val windSpeed: Double,
+    val waveHeight: Double
+)
