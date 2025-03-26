@@ -1,7 +1,8 @@
 package com.elpoint.domain.repository
 
-import com.elpoint.domain.model.Forecast
+import com.elpoint.domain.model.ForecastWave
 
-interface ForecastRepository {
-    suspend fun getForecast(lat: Double, lon: Double): Forecast
+
+internal interface ForecastRepository {
+    suspend fun getForecast(lat: Double, lon: Double): ForecastWave
 }

@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 object RetrofitClient {
-    private const val BASE_URL = "https://api.windy.com/api/" // Cambia la URL base si es necesario
+    private const val BASE_URL = "https://api.windy.com/api/"
 
     fun create(): Retrofit {
         return Retrofit.Builder()

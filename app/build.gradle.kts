@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.dagger.hilt.android")
     kotlin("kapt")
 }
 
@@ -68,11 +69,14 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-android-compiler:2.50")
 
-// Hilt para ViewModels
-    implementation(libs.androidx.hilt.lifecycle.viewmodel)
+    // Para ViewModel con Hilt
+    kapt("androidx.hilt:hilt-compiler:1.0.0")
+
+    // Si usas `@Inject` en Workers de WorkManager con Hilt
+    implementation("androidx.hilt:hilt-work:1.0.0")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
 
 // Integración con Jetpack Compose
@@ -84,4 +88,7 @@ dependencies {
 
     testImplementation(libs.mockk) // Para pruebas unitarias
     androidTestImplementation(libs.mockk.android)
+}
+kapt {
+    correctErrorTypes = true
 }

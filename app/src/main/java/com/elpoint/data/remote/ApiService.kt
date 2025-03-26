@@ -1,20 +1,23 @@
 package com.elpoint.data.remote
 
+import com.elpoint.domain.model.ForecastWaveResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
-interface ApiService {
-    @GET("forecast")
+internal interface ApiService {
+    @POST("point-forecast/v2")
     suspend fun getForecast(
-        @Query("lat") latitude: Double,
-        @Query("lon") longitude: Double,
-        @Query("apikey") apiKey: String
-    ): ForecastResponse
+        @Body body: ForecastBody,
+    ): ForecastWaveResponse
 }
 
-
-data class ForecastResponse(
-    val temperature: Double,
-    val windSpeed: Double,
-    val waveHeight: Double
+internal data class ForecastBody(
+    val lat: Double,
+    val lon: Double,
+    val model: String,
+    val levels: List<String>,
+    val parameters: List<String>,
+    val key: String = "JIqBWLUVopVpLlrVGiojCViSy7KphizP"
 )
