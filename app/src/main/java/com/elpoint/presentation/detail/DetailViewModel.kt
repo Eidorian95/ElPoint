@@ -1,4 +1,4 @@
-package com.elpoint.presentation.home
+package com.elpoint.presentation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-internal class HomeViewModel @Inject constructor(
+internal class DetailViewModel @Inject constructor(
     private val getForecastUseCase: GetForecastUseCase
 ) : ViewModel() {
 

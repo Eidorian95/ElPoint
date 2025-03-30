@@ -41,13 +41,6 @@ private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
                 height = swell1HeightSurface?.getOrNull(index),
                 period = swell1PeriodSurface?.getOrNull(index)
             ),
-            swell2 = WaveData(
-                direction = Direction.fromDegrees(
-                    swell2HeightSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = swell2HeightSurface?.getOrNull(index),
-                period = swell2PeriodSurface?.getOrNull(index)
-            ),
             waves = WaveData(
                 direction = Direction.fromDegrees(
                     wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
