@@ -1,5 +1,6 @@
 package com.elpoint.presentation.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elpoint.domain.model.Direction
@@ -13,11 +14,13 @@ import com.elpoint.presentation.state.ForecastState
 import com.elpoint.presentation.state.ForecastUiModel
 import com.elpoint.presentation.state.HourlyForecastUI
 import com.elpoint.presentation.state.WaveDataUI
+import com.elpoint.presentation.state.WindDataUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -44,23 +47,31 @@ internal class DetailViewModel @Inject constructor(
 
     private fun ForecastWave.toUIModel(): ForecastUiModel {
         val currentTimestamp = System.currentTimeMillis() / 1000
-        val sortedForecasts = timestamps.sortedBy { it.timestamp }
+        val futureForecasts = timestamps
+            .filter { it.timestamp >= currentTimestamp }
+            .sortedBy { it.timestamp }
 
-        val current = sortedForecasts.firstOrNull { it.timestamp >= currentTimestamp }
-        val nextHours = sortedForecasts.filter { it.timestamp > currentTimestamp }
+        val current = futureForecasts.firstOrNull()
+        val targetHours = listOf(6, 9, 12, 15, 18, 20)
+
+        val nextHoursForecast = targetHours.mapNotNull { targetHour ->
+            futureForecasts.minByOrNull { forecast ->
+                val forecastHour = forecast.timestamp.toHourOfDay()
+                kotlin.math.abs(forecastHour - targetHour)
+            }
+        }.distinctBy { it.timestamp }
 
         return ForecastUiModel(
             currentForecast = current?.toHourlyForecastUI(units),
-            nextHoursForecast = nextHours.map { it.toHourlyForecastUI(units) }
+            nextHoursForecast = nextHoursForecast.map { it.toHourlyForecastUI(units) }
         )
     }
 
     private fun TimestampForecast.toHourlyForecastUI(units: Units?): HourlyForecastUI {
         return HourlyForecastUI(
             time = timestamp.toHourFormat(),
-            swell1 = swell1?.toWaveDataUI(units?.swell1HeightUnit, units?.swell1PeriodUnit),
             waves = waves?.toWaveDataUI(units?.wavesHeightUnit, units?.wavesPeriodUnit),
-            wWaves = wWaves?.toWaveDataUI(units?.wavesHeightUnit, units?.wavesPeriodUnit)
+            winds = wWaves?.toWindDataUi(units?.wavesHeightUnit, units?.wavesPeriodUnit)
         )
     }
 
@@ -69,6 +80,14 @@ internal class DetailViewModel @Inject constructor(
             direction = direction?.toDirectionUI(),
             height = "${height ?: "-"} ${heightUnit.orEmpty()}",
             period = "${period ?: "-"} ${periodUnit.orEmpty()}"
+        )
+    }
+    //TODO: cambiar la info de ola por el de viento con nueva API
+    private fun WaveData.toWindDataUi(heightUnit: String?, periodUnit: String?): WindDataUI {
+        return WindDataUI(
+            direction = direction?.toDirectionUI(),
+            speed = "27km/h",
+            type = "CROSS_SHORE"
         )
     }
 
@@ -83,4 +102,10 @@ internal class DetailViewModel @Inject constructor(
         return sdf.format(Date(this * 1000))
     }
 
+    fun Long.toHourOfDay(): Int {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = this@toHourOfDay * 1000
+        }
+        return calendar.get(Calendar.HOUR_OF_DAY)
+    }
 }

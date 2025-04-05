@@ -8,7 +8,6 @@ data class ForecastWave(
 
 data class TimestampForecast(
     val timestamp: Long,
-    val swell1: WaveData?,
     val waves: WaveData?,
     val wWaves: WaveData?
 )

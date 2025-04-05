@@ -35,13 +35,6 @@ private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
     val timestamps = ts?.mapIndexed { index, timestamp ->
         TimestampForecast(
             timestamp = timestamp ?: 0L,
-            swell1 = WaveData(
-                direction = Direction.fromDegrees(
-                    swell1DirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = swell1HeightSurface?.getHeightOrNull(index),
-                period = swell1PeriodSurface?.getPeriodOrNull(index)
-            ),
             waves = WaveData(
                 direction = Direction.fromDegrees(
                     wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0

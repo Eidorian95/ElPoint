@@ -4,16 +4,6 @@ package com.elpoint.domain.model
 import com.google.gson.annotations.SerializedName
 
 data class ForecastWaveResponse(
-    @SerializedName("swell1_direction-surface")
-    val swell1DirectionSurface: List<Double?>?,
-    @SerializedName("swell1_height-surface")
-    val swell1HeightSurface: List<Double?>?,
-    @SerializedName("swell1_period-surface")
-    val swell1PeriodSurface: List<Double?>?,
-    @SerializedName("swell2_height-surface")
-    val swell2HeightSurface: List<Double?>?,
-    @SerializedName("swell2_period-surface")
-    val swell2PeriodSurface: List<Double?>?,
     @SerializedName("ts")
     val ts: List<Long?>?,
     @SerializedName("units")
