@@ -11,6 +11,7 @@ import com.elpoint.domain.model.UnitsResponse
 import com.elpoint.domain.model.WaveData
 import com.elpoint.domain.repository.ForecastRepository
 import javax.inject.Inject
+import kotlin.math.round
 
 internal class ForecastRepositoryImpl @Inject constructor(
     private val apiService: ApiService
@@ -38,22 +39,22 @@ private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
                 direction = Direction.fromDegrees(
                     swell1DirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = swell1HeightSurface?.getOrNull(index)?.toInt(),
-                period = swell1PeriodSurface?.getOrNull(index)?.toInt()
+                height = swell1HeightSurface?.getHeightOrNull(index),
+                period = swell1PeriodSurface?.getPeriodOrNull(index)
             ),
             waves = WaveData(
                 direction = Direction.fromDegrees(
                     wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = wavesHeightSurface?.getOrNull(index)?.toInt(),
-                period = wavesPeriodSurface?.getOrNull(index)?.toInt()
+                height = wavesHeightSurface?.getHeightOrNull(index),
+                period = wavesPeriodSurface?.getPeriodOrNull(index)
             ),
             wWaves = WaveData(
                 direction = Direction.fromDegrees(
                     wwavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = wwavesHeightSurface?.getOrNull(index)?.toInt(),
-                period = wwavesPeriodSurface?.getOrNull(index)?.toInt()
+                height = wwavesHeightSurface?.getHeightOrNull(index),
+                period = wwavesPeriodSurface?.getPeriodOrNull(index)
             )
         )
     } ?: emptyList()
@@ -65,6 +66,7 @@ private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
     )
 }
 
+
 fun UnitsResponse.toDomainModel() = Units(
     wavesDirectionUnit = wavesDirectionSurface.orEmpty(),
     wavesHeightUnit = wavesHeightSurface.orEmpty(),
@@ -74,3 +76,11 @@ fun UnitsResponse.toDomainModel() = Units(
     swell1PeriodUnit = swell1PeriodSurface.orEmpty()
 
 )
+
+fun List<Double?>.getHeightOrNull(index:Int): Double? {
+    return this.getOrNull(index)?.let { round(it * 10) / 10 }
+}
+
+fun List<Double?>.getPeriodOrNull(index:Int): Int? {
+    return this.getOrNull(index)?.toInt()
+}
