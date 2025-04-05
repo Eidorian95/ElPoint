@@ -1,8 +1,8 @@
 package com.elpoint.domain.model
 
 enum class Direction(val abbreviation: String) {
-    N("Norte"), NE("Noreste"), E("Este"), SE("Sudeste"),
-    S("Sur"), SW("Suroeste"), W("Oeste"), NW("Noroeste"),
+    N("N"), NE("NE"), E("E"), SE("SE"),
+    S("S"), SW("SO"), W("O"), NW("NO"),
     NA("N/A");
 
     companion object {

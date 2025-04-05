@@ -29,16 +29,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elpoint.R
 import com.elpoint.presentation.state.ForecastState
+import com.elpoint.presentation.state.ForecastUiModel
+import com.elpoint.presentation.state.HourlyForecastUI
 
 @Composable
 internal fun DetailScreen(state: State<ForecastState>) {
-    when (val forecast = state.value) {
+    when (val value = state.value) {
         ForecastState.Loading -> {
             Text(text = "Loading")
         }
 
         is ForecastState.Success -> {
-            DetailInformation(forecast)
+            DetailInformation(value.forecast)
         }
 
         else -> {
@@ -48,14 +50,14 @@ internal fun DetailScreen(state: State<ForecastState>) {
 }
 
 @Composable
-private fun DetailInformation(forecast: ForecastState.Success) {
+private fun DetailInformation(forecast: ForecastUiModel) {
     Column {
-        CurrentHeader()
+        CurrentHeader(forecast.currentForecast)
     }
 }
 
 @Composable
-private fun CurrentHeader() {
+private fun CurrentHeader(currentForecast: HourlyForecastUI?) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,7 +72,7 @@ private fun CurrentHeader() {
                     .systemBarsPadding()
                     .padding(top = 8.dp)
                     .align(Alignment.CenterHorizontally),
-                text = "Actual 15h",
+                text = currentForecast?.time ?: "--h",
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -83,9 +85,14 @@ private fun CurrentHeader() {
                 horizontalArrangement = Arrangement.SpaceBetween
 
             ) {
+                val waves  = currentForecast?.waves
+                val windWaves  = currentForecast?.wWaves
                 CurrentForecast(
+                    modifier = Modifier,
                     icon = R.drawable.waves,
-                    direction = "S", subtitleLeft = "0.7m", subtitleRight = "9s"
+                    direction = waves?.direction?.direction ?: "-",
+                    subtitleLeft = waves?.height ?: "-",
+                    subtitleRight = waves?.period ?: "-",
                 )
                 Divider(
                     modifier = Modifier
@@ -96,9 +103,9 @@ private fun CurrentHeader() {
                 )
                 CurrentForecast(
                     icon = R.drawable.winds,
-                    direction = "N",
-                    subtitleLeft = "24km/h",
-                    subtitleRight = "CROSS-OFF"
+                    direction = windWaves?.direction?.direction ?: "-",
+                    subtitleLeft = windWaves?.period ?: "-",
+                    subtitleRight = "CROSS-OFF",
                 )
             }
         }
@@ -112,7 +119,7 @@ private fun CurrentForecast(
     @DrawableRes icon: Int,
     direction: String,
     subtitleLeft: String,
-    subtitleRight: String
+    subtitleRight: String,
 ) {
     Column(
         modifier = modifier.width(200.dp),

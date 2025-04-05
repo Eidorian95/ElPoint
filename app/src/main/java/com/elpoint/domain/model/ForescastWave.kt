@@ -15,8 +15,8 @@ data class TimestampForecast(
 
 data class WaveData(
     val direction: Direction?,
-    val height: Double?,
-    val period: Double?
+    val height: Int?,
+    val period: Int?
 )
 
 data class Units(

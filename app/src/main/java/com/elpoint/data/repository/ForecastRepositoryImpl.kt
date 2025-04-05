@@ -38,22 +38,22 @@ private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
                 direction = Direction.fromDegrees(
                     swell1DirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = swell1HeightSurface?.getOrNull(index),
-                period = swell1PeriodSurface?.getOrNull(index)
+                height = swell1HeightSurface?.getOrNull(index)?.toInt(),
+                period = swell1PeriodSurface?.getOrNull(index)?.toInt()
             ),
             waves = WaveData(
                 direction = Direction.fromDegrees(
                     wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = wavesHeightSurface?.getOrNull(index),
-                period = wavesPeriodSurface?.getOrNull(index)
+                height = wavesHeightSurface?.getOrNull(index)?.toInt(),
+                period = wavesPeriodSurface?.getOrNull(index)?.toInt()
             ),
             wWaves = WaveData(
                 direction = Direction.fromDegrees(
                     wwavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
                 ),
-                height = wwavesHeightSurface?.getOrNull(index),
-                period = wwavesPeriodSurface?.getOrNull(index)
+                height = wwavesHeightSurface?.getOrNull(index)?.toInt(),
+                period = wwavesPeriodSurface?.getOrNull(index)?.toInt()
             )
         )
     } ?: emptyList()
