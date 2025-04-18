@@ -64,7 +64,7 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
                 CurrentForecast(
                     modifier = Modifier,
                     icon = R.drawable.waves,
-                    direction = waves?.direction?.direction ?: "-",
+                    direction = waves?.direction?.cardinal ?: "-",
                     subtitleLeft = waves?.height ?: "-",
                     subtitleRight = waves?.period ?: "-",
                 )
@@ -77,7 +77,7 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
                 )
                 CurrentForecast(
                     icon = R.drawable.winds,
-                    direction = winds?.direction?.direction ?: "-",
+                    direction = winds?.direction?.cardinal ?: "-",
                     subtitleLeft = winds?.speed ?: "-",
                     subtitleRight = "CROSS-OFF",
                 )

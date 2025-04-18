@@ -68,20 +68,18 @@ private fun DetailInformation(forecast: ForecastUiModel) {
 @Composable
 fun HourlyForecast(nextHoursForecast: List<HourlyForecastUI>) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        val mock = getMock()
-
         Row {
             //iconos de hora, ola y viento
         }
-        mock.forEachIndexed { index, forecast ->
+        nextHoursForecast.forEachIndexed { _, forecast ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Box(modifier = Modifier.size( 24.dp)){
                     Text( text = forecast.time, modifier = Modifier.align(Alignment.Center))
                 }
-                Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.waves?.direction?.direction ?: "-")
+                Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.waves?.direction?.cardinal ?: "-")
                 Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.waves?.height.orEmpty())
                 Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.waves?.period.orEmpty())
-                Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.winds?.direction?.direction ?: "-")
+                Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.winds?.direction?.cardinal ?: "-")
                 Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.winds?.speed.orEmpty())
                 Text(modifier = Modifier.padding(horizontal = 8.dp),text = forecast.winds?.type.orEmpty())
             }

@@ -5,7 +5,7 @@ data class Forecast(
 )
 
 data class Hour(
-    val time: String,
+    val time: Long,
     val gust: Double?,
     val waterTemperature: Double?,
     val waveDirection: Double?,

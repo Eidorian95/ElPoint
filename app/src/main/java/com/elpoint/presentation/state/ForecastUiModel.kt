@@ -24,5 +24,5 @@ data class WindDataUI(
 )
 
 data class DirectionUI(
-    val direction: String,
+    val cardinal: String,
 )
