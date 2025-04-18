@@ -4,17 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elpoint.domain.model.Direction
-import com.elpoint.domain.model.ForecastWave
-import com.elpoint.domain.model.TimestampForecast
-import com.elpoint.domain.model.Units
-import com.elpoint.domain.model.WaveData
 import com.elpoint.domain.usecases.GetForecastUseCase
 import com.elpoint.presentation.state.DirectionUI
 import com.elpoint.presentation.state.ForecastState
-import com.elpoint.presentation.state.ForecastUiModel
-import com.elpoint.presentation.state.HourlyForecastUI
-import com.elpoint.presentation.state.WaveDataUI
-import com.elpoint.presentation.state.WindDataUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,17 +25,20 @@ internal class DetailViewModel @Inject constructor(
     private val _state = MutableStateFlow<ForecastState>(ForecastState.Loading)
     val state: StateFlow<ForecastState> = _state
 
-    fun fetchForecast(lat: Double = -36.5759957, lon: Double = -56.6891419) {
+    fun fetchForecast(lat: Double = -38.2753982, lon: Double = -57.8324016) {
         viewModelScope.launch {
             try {
                 val forecast = getForecastUseCase(lat, lon)
-                _state.value = ForecastState.Success(forecast.toUIModel())
+               // _state.value = ForecastState.Success(forecast)
+                Log.d("FORESCAST RESPONSE", "${forecast.hours}")
             } catch (e: Exception) {
                 _state.value =
                     ForecastState.Error("Error fetching forecast: ${e.message}. Cause: ${e.cause}")
+                Log.d("FORESCAST ERROR", e.message.orEmpty())
             }
         }
     }
+/*
 
     private fun ForecastWave.toUIModel(): ForecastUiModel {
         val currentTimestamp = System.currentTimeMillis() / 1000
@@ -66,8 +61,9 @@ internal class DetailViewModel @Inject constructor(
             nextHoursForecast = nextHoursForecast.map { it.toHourlyForecastUI(units) }
         )
     }
+*/
 
-    private fun TimestampForecast.toHourlyForecastUI(units: Units?): HourlyForecastUI {
+/*    private fun TimestampForecast.toHourlyForecastUI(units: Units?): HourlyForecastUI {
         return HourlyForecastUI(
             time = timestamp.toHourFormat(),
             waves = waves?.toWaveDataUI(units?.wavesHeightUnit, units?.wavesPeriodUnit),
@@ -89,7 +85,7 @@ internal class DetailViewModel @Inject constructor(
             speed = "27km/h",
             type = "CROSS_SHORE"
         )
-    }
+    }*/
 
     private fun Direction.toDirectionUI(): DirectionUI {
         return DirectionUI(

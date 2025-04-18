@@ -1,7 +1,5 @@
 package com.elpoint.presentation.state
 
-import com.elpoint.domain.model.ForecastWave
-
 
 sealed class ForecastState {
     data object Loading : ForecastState()

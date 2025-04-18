@@ -1,79 +1,45 @@
 package com.elpoint.data.repository
 
 import com.elpoint.data.remote.ApiService
-import com.elpoint.data.remote.ForecastBody
-import com.elpoint.domain.model.Direction
-import com.elpoint.domain.model.ForecastWave
-import com.elpoint.domain.model.ForecastWaveResponse
-import com.elpoint.domain.model.TimestampForecast
-import com.elpoint.domain.model.Units
-import com.elpoint.domain.model.UnitsResponse
-import com.elpoint.domain.model.WaveData
+import com.elpoint.domain.model.Forecast
+import com.elpoint.domain.model.ForecastResponse
+import com.elpoint.domain.model.Hour
+import com.elpoint.domain.model.HoursDto
 import com.elpoint.domain.repository.ForecastRepository
 import javax.inject.Inject
-import kotlin.math.round
 
 internal class ForecastRepositoryImpl @Inject constructor(
     private val apiService: ApiService
 ) : ForecastRepository {
 
-    override suspend fun getForecast(lat: Double, lon: Double): ForecastWave {
+    override suspend fun getForecast(lat: Double, lon: Double): Forecast {
         val response = apiService.getForecast(
-            body = ForecastBody(
                 lat = lat,
-                lon = lon,
-                model = "gfsWave",
-                levels = listOf("surface"),
-                parameters = listOf("waves", "windWaves", "swell1", "swell2")
-            )
+                lng = lon,
+                source = "sg",
+                params = "waterTemperature,wavePeriod,waveDirection,waveHeight,windSpeed,windDirection,gust"
         )
         return response.toDomainModel()
     }
 }
 
-private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
-    val timestamps = ts?.mapIndexed { index, timestamp ->
-        TimestampForecast(
-            timestamp = timestamp ?: 0L,
-            waves = WaveData(
-                direction = Direction.fromDegrees(
-                    wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = wavesHeightSurface?.getHeightOrNull(index),
-                period = wavesPeriodSurface?.getPeriodOrNull(index)
-            ),
-            wWaves = WaveData(
-                direction = Direction.fromDegrees(
-                    wwavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = wwavesHeightSurface?.getHeightOrNull(index),
-                period = wwavesPeriodSurface?.getPeriodOrNull(index)
-            )
-        )
-    } ?: emptyList()
-
-    return ForecastWave(
-        timestamps = timestamps,
-        units = units?.toDomainModel(),
-        warning = warning
+private fun ForecastResponse.toDomainModel(): Forecast {
+    return Forecast(
+        hours = this.hours.toDomainModel()
     )
 }
 
-
-fun UnitsResponse.toDomainModel() = Units(
-    wavesDirectionUnit = wavesDirectionSurface.orEmpty(),
-    wavesHeightUnit = wavesHeightSurface.orEmpty(),
-    wavesPeriodUnit = wavesPeriodSurface.orEmpty(),
-    swell1DirectionUnit = swell1DirectionSurface.orEmpty(),
-    swell1HeightUnit = swell1HeightSurface.orEmpty(),
-    swell1PeriodUnit = swell1PeriodSurface.orEmpty()
-
-)
-
-fun List<Double?>.getHeightOrNull(index:Int): Double? {
-    return this.getOrNull(index)?.let { round(it * 10) / 10 }
-}
-
-fun List<Double?>.getPeriodOrNull(index:Int): Int? {
-    return this.getOrNull(index)?.toInt()
+private fun List<HoursDto>.toDomainModel(): List<Hour> {
+    return this.map {
+        Hour(
+            time = it.time,
+            gust = it.gust?.sg,
+            waterTemperature = it.waterTemperature?.sg,
+            waveDirection = it.waveDirection?.sg,
+            waveHeight = it.waveHeight?.sg,
+            wavePeriod = it.wavePeriod?.sg,
+            windSpeed = it.windSpeed?.sg,
+            windDirection = it.windDirection?.sg
+        )
+    }
 }
