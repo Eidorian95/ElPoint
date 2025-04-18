@@ -1,11 +1,13 @@
 package com.elpoint.domain.model
 
+import java.time.ZonedDateTime
+
 data class Forecast(
     val hours: List<Hour>
 )
 
 data class Hour(
-    val time: Long,
+    val time: ZonedDateTime,
     val gust: Double?,
     val waterTemperature: Double?,
     val waveDirection: Double?,

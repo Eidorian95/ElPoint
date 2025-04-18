@@ -17,10 +17,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,29 +46,29 @@ internal class DetailViewModel @Inject constructor(
 
 
     private fun Forecast.toUIModel(): ForecastUiModel {
-        val currentTimestamp = System.currentTimeMillis() / 1000
+        val now = ZonedDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"))
+        val today = now.toLocalDate()
 
-        val futureForecasts = this.hours
-            .filter { it.time >= currentTimestamp }
-            .sortedBy { it.time }
+        val todayForecasts = hours
+            .filter { it.time.toLocalDate() == today }
+            .sortedBy { it.time.toEpochSecond() }
 
-        val current = futureForecasts.firstOrNull()
-        val targetHours = listOf(6, 9, 12, 15, 18, 20)
+        val actual = todayForecasts
+            .firstOrNull { it.time.isAfter(now) || it.time.isEqual(now) }
+            ?: todayForecasts.lastOrNull()
 
-          val nextHoursForecast = targetHours.mapNotNull { targetHour ->
-              futureForecasts.minByOrNull { forecast ->
-                  val forecastHour = forecast.time.toHourOfDay()
-                  kotlin.math.abs(forecastHour - targetHour)
-              }
-          }.distinctBy { it.time }
-          return ForecastUiModel(
-              currentForecast = current?.toHourlyForecastUI(),
-              nextHoursForecast = nextHoursForecast.map { it.toHourlyForecastUI() }
-          )
+        val nextHours = todayForecasts
+            .filter {
+                it.time.hour % 3 == 0
+            }
+
+        return ForecastUiModel(
+            currentForecast = actual?.toHourlyForecastUI(),
+            nextHoursForecast = nextHours.map { it.toHourlyForecastUI() }
+        )
     }
 
-
-   private fun Hour.toHourlyForecastUI(): HourlyForecastUI {
+    private fun Hour.toHourlyForecastUI(): HourlyForecastUI {
         return HourlyForecastUI(
             time = time.toHourFormat(),
             waves = WaveDataUI(
@@ -91,15 +90,7 @@ internal class DetailViewModel @Inject constructor(
         )
     }
 
-    private fun Long.toHourFormat(): String {
-        val sdf = SimpleDateFormat("HH", Locale.getDefault())
-        return sdf.format(Date(this * 1000))
-    }
-
-    private fun Long.toHourOfDay(): Int {
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = this@toHourOfDay * 1000
-        }
-        return calendar.get(Calendar.HOUR_OF_DAY)
+    private fun ZonedDateTime.toHourFormat(): String {
+        return this.format(DateTimeFormatter.ofPattern("HH"))
     }
 }

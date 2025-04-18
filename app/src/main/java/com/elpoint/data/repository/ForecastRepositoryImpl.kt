@@ -9,6 +9,7 @@ import com.elpoint.domain.model.HoursDto
 import com.elpoint.domain.repository.ForecastRepository
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -44,7 +45,7 @@ private fun ForecastResponse.toDomainModel(): Forecast {
 private fun List<HoursDto>.toDomainModel(): List<Hour> {
     return this.map {
         Hour(
-            time = it.time.parseToMillis(),
+            time = it.time.toZonedDateTimeUtc().toLocalZoned(),
             gust = it.gust?.sg,
             waterTemperature = it.waterTemperature?.sg,
             waveDirection = it.waveDirection?.sg,
@@ -55,8 +56,9 @@ private fun List<HoursDto>.toDomainModel(): List<Hour> {
         )
     }
 }
-
-private fun String.parseToMillis(): Long {
-    val zonedDateTime = ZonedDateTime.parse(this, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    return zonedDateTime.toInstant().toEpochMilli()
+private fun String.toZonedDateTimeUtc(): ZonedDateTime {
+    return ZonedDateTime.parse(this, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+}
+private fun ZonedDateTime.toLocalZoned(): ZonedDateTime {
+    return this.withZoneSameInstant(ZoneId.of("America/Argentina/Buenos_Aires"))
 }
