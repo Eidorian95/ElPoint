@@ -6,21 +6,21 @@ class ForecastUiModel(
 )
 
 data class HourlyForecastUI(
-    val time: String,  // "15:00" (hora en formato 24h)
-    val waves: WaveDataUI?,
-    val winds: WindDataUI?
+    val time: String,
+    val waves: WaveDataUI,
+    val winds: WindDataUI
 )
 
 data class WaveDataUI(
-    val direction: DirectionUI?, // Para dibujar la flecha
-    val height: String,  // "1.5 m"
-    val period: String  // "10 s"
+    val direction: DirectionUI,
+    val height: String,
+    val period: String
 )
 
 data class WindDataUI(
-    val direction: DirectionUI?, // Para dibujar la flecha
-    val speed: String,  // "1.5 m"
-    val type: String  // "10 s"
+    val direction: DirectionUI,
+    val speed: String,
+    val type: String
 )
 
 data class DirectionUI(

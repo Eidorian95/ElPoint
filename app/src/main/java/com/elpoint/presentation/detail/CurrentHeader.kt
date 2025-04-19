@@ -7,13 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
@@ -34,12 +37,11 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp)
+            .wrapContentHeight()
             .clip(RoundedCornerShape(bottomEnd = 24.dp, bottomStart = 24.dp))
             .background(Color(0xFF71b3e8))
     ) {
         Column {
-            //ACTUAL 15h
             Text(
                 modifier = Modifier
                     .systemBarsPadding()
@@ -47,22 +49,18 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
                     .align(Alignment.CenterHorizontally),
                 text = currentForecast?.time.plus("h"),
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-
-            //CONDICIONES ACUTALES
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
 
             ) {
                 val waves  = currentForecast?.waves
                 val winds  = currentForecast?.winds
                 CurrentForecast(
-                    modifier = Modifier,
                     icon = R.drawable.waves,
                     direction = waves?.direction?.cardinal ?: "-",
                     subtitleLeft = waves?.height ?: "-",
@@ -70,12 +68,13 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
                 )
                 Divider(
                     modifier = Modifier
-                        .fillMaxHeight()
+                        .height(200.dp)
                         .width(1.dp)
                         .padding(bottom = 16.dp),
                     color = Color.White
                 )
                 CurrentForecast(
+                    modifier = Modifier.padding(start = 16.dp),
                     icon = R.drawable.winds,
                     direction = winds?.direction?.cardinal ?: "-",
                     subtitleLeft = winds?.speed ?: "-",
@@ -88,7 +87,7 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
 
 
 @Composable
-private fun CurrentForecast(
+private fun RowScope.CurrentForecast(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
     direction: String,
@@ -96,13 +95,12 @@ private fun CurrentForecast(
     subtitleRight: String,
 ) {
     Column(
-        modifier = modifier.width(200.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.weight(1f),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
         Image(
             modifier = Modifier
-                .size(32.dp),
+                .size(48.dp),
             painter = painterResource(id = icon),
             contentDescription = ""
         )

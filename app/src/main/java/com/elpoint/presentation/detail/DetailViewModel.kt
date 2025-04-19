@@ -70,23 +70,23 @@ internal class DetailViewModel @Inject constructor(
 
     private fun Hour.toHourlyForecastUI(): HourlyForecastUI {
         return HourlyForecastUI(
-            time = time.toHourFormat(),
+            time = "${ time.toHourFormat()}h",
             waves = WaveDataUI(
-                direction = waveDirection?.toDirectionUI(),
+                direction = waveDirection.toDirectionUI(),
                 height = "${waveHeight}m",
                 period = "${wavePeriod}s"
             ),
             winds = WindDataUI(
-                direction = windDirection?.toDirectionUI(),
+                direction = windDirection.toDirectionUI(),
                 speed = "${windSpeed}m/s",
                 type = "OFF-SHORE"
             )
         )
     }
 
-    private fun Double.toDirectionUI(): DirectionUI {
+    private fun Double?.toDirectionUI(): DirectionUI {
         return DirectionUI(
-            cardinal = Direction.fromDegrees(this.toInt()).abbreviation,
+            cardinal = Direction.fromDegrees(this?.toInt() ?: 0).abbreviation,
         )
     }
 

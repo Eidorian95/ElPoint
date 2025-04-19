@@ -34,7 +34,19 @@ class MainActivity : ComponentActivity() {
             ElPointTheme {
                 val state = viewModel.state.collectAsState()
                 Surface {
-                    DetailScreen(state)
+                    when (val value = state.value) {
+                        ForecastState.Loading -> {
+                            Text(text = "Loading")
+                        }
+
+                        is ForecastState.Success -> {
+                            DetailInformationScreen(value.forecast)
+                        }
+
+                        else -> {
+                            Text(text = "Error")
+                        }
+                    }
                 }
             }
         }
