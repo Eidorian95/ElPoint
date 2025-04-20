@@ -1,4 +1,4 @@
-package com.elpoint.presentation.home
+package com.elpoint.presentation.detail
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,7 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: DetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,34 +33,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             ElPointTheme {
                 val state = viewModel.state.collectAsState()
-                Surface(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .systemBarsPadding()
-                ) {
-                    HomeScreen(state)
-                }
-            }
-        }
-    }
+                Surface {
+                    when (val value = state.value) {
+                        ForecastState.Loading -> {
+                            Text(text = "Loading")
+                        }
 
-    @Composable
-    private fun HomeScreen(state: State<ForecastState>) {
-        when (state.value) {
-            Loading -> {
-                Text(text = "Loading")
-            }
+                        is ForecastState.Success -> {
+                            DetailInformationScreen(value.forecast)
+                        }
 
-            is Success -> {
-                LazyColumn {
-                    items((state.value as Success).forecast.timestamps) {
-                        Text(text = it.toString())
+                        else -> {
+                            Text(text = "Error")
+                        }
                     }
                 }
-            }
-
-            else -> {
-                Text(text = "Error")
             }
         }
     }

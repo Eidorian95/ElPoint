@@ -1,83 +1,64 @@
 package com.elpoint.data.repository
 
+import android.content.Context
 import com.elpoint.data.remote.ApiService
-import com.elpoint.data.remote.ForecastBody
-import com.elpoint.domain.model.Direction
-import com.elpoint.domain.model.ForecastWave
-import com.elpoint.domain.model.ForecastWaveResponse
-import com.elpoint.domain.model.TimestampForecast
-import com.elpoint.domain.model.Units
-import com.elpoint.domain.model.UnitsResponse
-import com.elpoint.domain.model.WaveData
+import com.elpoint.domain.model.Forecast
+import com.elpoint.domain.model.ForecastResponse
+import com.elpoint.domain.model.Hour
+import com.elpoint.domain.model.HoursDto
 import com.elpoint.domain.repository.ForecastRepository
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 internal class ForecastRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    @ApplicationContext private val context: Context
 ) : ForecastRepository {
 
-    override suspend fun getForecast(lat: Double, lon: Double): ForecastWave {
-        val response = apiService.getForecast(
-            body = ForecastBody(
+    override suspend fun getForecast(lat: Double, lon: Double): Forecast {
+       /* val response = apiService.getForecast(
                 lat = lat,
-                lon = lon,
-                model = "gfsWave",
-                levels = listOf("surface"),
-                parameters = listOf("waves", "windWaves", "swell1", "swell2")
-            )
-        )
+                lng = lon,
+                source = "sg",
+                params = "waterTemperature,wavePeriod,waveDirection,waveHeight,windSpeed,windDirection,gust"
+        )*/
+        val response = readJsonFromAssets(context, "forecast_mock.json")
         return response.toDomainModel()
     }
 }
+fun readJsonFromAssets(context: Context, fileName: String): ForecastResponse {
+    val json =  context.assets.open(fileName).bufferedReader().use { it.readText() }
+    val gson = Gson()
+    return gson.fromJson(json, ForecastResponse::class.java)
+}
 
-private fun ForecastWaveResponse.toDomainModel(): ForecastWave {
-    val timestamps = ts?.mapIndexed { index, timestamp ->
-        TimestampForecast(
-            timestamp = timestamp ?: 0L,
-            swell1 = WaveData(
-                direction = Direction.fromDegrees(
-                    swell1DirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = swell1HeightSurface?.getOrNull(index),
-                period = swell1PeriodSurface?.getOrNull(index)
-            ),
-            swell2 = WaveData(
-                direction = Direction.fromDegrees(
-                    swell2HeightSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = swell2HeightSurface?.getOrNull(index),
-                period = swell2PeriodSurface?.getOrNull(index)
-            ),
-            waves = WaveData(
-                direction = Direction.fromDegrees(
-                    wavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = wavesHeightSurface?.getOrNull(index),
-                period = wavesPeriodSurface?.getOrNull(index)
-            ),
-            wWaves = WaveData(
-                direction = Direction.fromDegrees(
-                    wwavesDirectionSurface?.getOrNull(index)?.toInt() ?: 0
-                ),
-                height = wwavesHeightSurface?.getOrNull(index),
-                period = wwavesPeriodSurface?.getOrNull(index)
-            )
-        )
-    } ?: emptyList()
-
-    return ForecastWave(
-        timestamps = timestamps,
-        units = units?.toDomainModel(),
-        warning = warning
+private fun ForecastResponse.toDomainModel(): Forecast {
+    return Forecast(
+        hours = this.hours.toDomainModel()
     )
 }
 
-fun UnitsResponse.toDomainModel() = Units(
-    wavesDirectionUnit = wavesDirectionSurface.orEmpty(),
-    wavesHeightUnit = wavesHeightSurface.orEmpty(),
-    wavesPeriodUnit = wavesPeriodSurface.orEmpty(),
-    swell1DirectionUnit = swell1DirectionSurface.orEmpty(),
-    swell1HeightUnit = swell1HeightSurface.orEmpty(),
-    swell1PeriodUnit = swell1PeriodSurface.orEmpty()
-
-)
+private fun List<HoursDto>.toDomainModel(): List<Hour> {
+    return this.map {
+        Hour(
+            time = it.time.toZonedDateTimeUtc().toLocalZoned(),
+            gust = it.gust?.sg,
+            waterTemperature = it.waterTemperature?.sg,
+            waveDirection = it.waveDirection?.sg,
+            waveHeight = it.waveHeight?.sg,
+            wavePeriod = it.wavePeriod?.sg,
+            windSpeed = it.windSpeed?.sg,
+            windDirection = it.windDirection?.sg
+        )
+    }
+}
+private fun String.toZonedDateTimeUtc(): ZonedDateTime {
+    return ZonedDateTime.parse(this, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+}
+private fun ZonedDateTime.toLocalZoned(): ZonedDateTime {
+    return this.withZoneSameInstant(ZoneId.of("America/Argentina/Buenos_Aires"))
+}
