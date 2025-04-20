@@ -47,7 +47,7 @@ internal fun CurrentHeader(currentForecast: HourlyForecastUI?) {
                     .systemBarsPadding()
                     .padding(top = 16.dp)
                     .align(Alignment.CenterHorizontally),
-                text = currentForecast?.time.plus("h"),
+                text = currentForecast?.time.orEmpty(),
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold

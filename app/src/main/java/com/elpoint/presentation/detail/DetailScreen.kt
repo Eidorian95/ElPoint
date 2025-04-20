@@ -3,6 +3,8 @@ package com.elpoint.presentation.detail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,7 +14,7 @@ import com.elpoint.presentation.state.HourlyForecastUI
 
 @Composable
 fun DetailInformationScreen(forecast: ForecastUiModel) {
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         CurrentHeader(forecast.currentForecast)
         HourlyForecast(forecast.nextDaysForecast)
     }

@@ -55,7 +55,6 @@ internal class DetailViewModel @Inject constructor(
 
         val forecastsPerDay = hours
             .filter { it.time.toLocalDate() in targetDates }
-            .filter { it.time.hour % 3 == 0 }
             .groupBy { it.time.toLocalDate() }
 
         val current = forecastsPerDay[today]
