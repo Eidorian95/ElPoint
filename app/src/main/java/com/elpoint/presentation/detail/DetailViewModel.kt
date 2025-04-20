@@ -7,6 +7,7 @@ import com.elpoint.domain.model.Direction
 import com.elpoint.domain.model.Forecast
 import com.elpoint.domain.model.Hour
 import com.elpoint.domain.usecases.GetForecastUseCase
+import com.elpoint.presentation.state.DayForecastUI
 import com.elpoint.presentation.state.DirectionUI
 import com.elpoint.presentation.state.ForecastState
 import com.elpoint.presentation.state.ForecastUiModel
@@ -17,9 +18,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,29 +51,37 @@ internal class DetailViewModel @Inject constructor(
     private fun Forecast.toUIModel(): ForecastUiModel {
         val now = ZonedDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"))
         val today = now.toLocalDate()
+        val targetDates = (0..2).map { today.plusDays(it.toLong()) }
 
-        val todayForecasts = hours
-            .filter { it.time.toLocalDate() == today }
-            .sortedBy { it.time.toEpochSecond() }
+        val forecastsPerDay = hours
+            .filter { it.time.toLocalDate() in targetDates }
+            .filter { it.time.hour % 3 == 0 }
+            .groupBy { it.time.toLocalDate() }
 
-        val actual = todayForecasts
-            .firstOrNull { it.time.isAfter(now) || it.time.isEqual(now) }
-            ?: todayForecasts.lastOrNull()
+        val current = forecastsPerDay[today]
+            ?.firstOrNull { it.time.isAfter(now) || it.time.isEqual(now) }
+            ?.toHourlyForecastUI()
 
-        val nextHours = todayForecasts
-            .filter {
-                it.time.hour % 3 == 0
+        val nextDaysForecast = forecastsPerDay
+            .toSortedMap()
+            .map { (date, hourlyList) ->
+                DayForecastUI(
+                    day = date.format(DateTimeFormatter.ofPattern("EEEE dd", Locale("es"))),
+                    hourlyForecast = hourlyList
+                        .sortedBy { it.time.toEpochSecond() }
+                        .map { it.toHourlyForecastUI() }
+                )
             }
 
         return ForecastUiModel(
-            currentForecast = actual?.toHourlyForecastUI(),
-            nextHoursForecast = nextHours.map { it.toHourlyForecastUI() }
+            currentForecast = current,
+            nextDaysForecast = nextDaysForecast
         )
     }
 
     private fun Hour.toHourlyForecastUI(): HourlyForecastUI {
         return HourlyForecastUI(
-            time = "${ time.toHourFormat()}h",
+            time = "${time.toHourFormat()}h",
             waves = WaveDataUI(
                 direction = waveDirection.toDirectionUI(),
                 height = "${waveHeight}m",

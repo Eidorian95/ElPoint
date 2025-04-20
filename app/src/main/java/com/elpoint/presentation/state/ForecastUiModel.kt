@@ -2,9 +2,13 @@ package com.elpoint.presentation.state
 
 class ForecastUiModel(
     val currentForecast: HourlyForecastUI?,
-    val nextHoursForecast: List<HourlyForecastUI>
+    val nextDaysForecast: List<DayForecastUI>,
 )
 
+data class DayForecastUI(
+    val day: String,
+    val hourlyForecast: List<HourlyForecastUI>
+)
 data class HourlyForecastUI(
     val time: String,
     val waves: WaveDataUI,

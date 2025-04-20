@@ -8,38 +8,32 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elpoint.R
-import com.elpoint.presentation.state.HourlyForecastUI
+import com.elpoint.presentation.state.DayForecastUI
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HourlyForecast(nextHoursForecast: List<HourlyForecastUI>) {
+fun HourlyForecast(daysForecast: List<DayForecastUI>) {
     val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier
@@ -47,7 +41,7 @@ fun HourlyForecast(nextHoursForecast: List<HourlyForecastUI>) {
             .padding(vertical = 16.dp)
     ) {
         val pagerState = rememberPagerState(pageCount = { 3 })
-        val days = listOf("Hoy", "Mañana", "Pasado Mañana")
+        val days = daysForecast.map { it.day }
 
         TabRow(selectedTabIndex = pagerState.currentPage) {
             days.forEachIndexed {index, title ->
@@ -77,7 +71,7 @@ fun HourlyForecast(nextHoursForecast: List<HourlyForecastUI>) {
         HorizontalPager(state = pagerState) {
             Column {
                 // Rows
-                nextHoursForecast.forEachIndexed { index, forecast ->
+                daysForecast[pagerState.currentPage].hourlyForecast.forEachIndexed { index, forecast ->
                     val background = if (index % 2 == 0) Color(0xFFf0f0f0) else Color.LightGray
                     Row(
                         modifier = Modifier
