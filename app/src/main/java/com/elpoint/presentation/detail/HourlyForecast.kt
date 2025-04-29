@@ -34,21 +34,23 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HourlyForecast(daysForecast: List<DayForecastUI>) {
-    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        val pagerState = rememberPagerState(pageCount = { 3 })
+        val coroutineScope = rememberCoroutineScope()
+        val pagerState = rememberPagerState(pageCount = { daysForecast.size })
         val days = daysForecast.map { it.day }
 
         TabRow(selectedTabIndex = pagerState.currentPage) {
             days.forEachIndexed {index, title ->
                 Tab(
                     selected = pagerState.currentPage == index,
-                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                    text = { Text(text = title) }
+                    onClick = { coroutineScope.launch { pagerState.scrollToPage(index) } },
+                    text = {
+                        Text(text = title)
+                    }
                 )
             }
         }
@@ -79,12 +81,12 @@ fun HourlyForecast(daysForecast: List<DayForecastUI>) {
                             .background(background),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        TableCell(text = forecast.time)
-                        TableCell(text = forecast.waves.height, 0.8f)
-                        TableCell(text = forecast.waves.direction.cardinal)
-                        TableCell(text = forecast.waves.period, 0.8f)
-                        TableCell(text = forecast.winds.speed, 1f)
-                        TableCell(text = forecast.winds.direction.cardinal)
+                        TableCell(text = { forecast.time })
+                        TableCell(text = { forecast.waves.height }, 0.8f)
+                        TableCell(text = { forecast.waves.direction.cardinal })
+                        TableCell(text = { forecast.waves.period }, 0.8f)
+                        TableCell(text = { forecast.winds.speed }, 1f)
+                        TableCell(text = { forecast.winds.direction.cardinal })
                     }
                 }
             }
@@ -110,13 +112,13 @@ private fun RowScope.TableHeader(@DrawableRes icon: Int, weight: Float = 0.6f) {
 }
 
 @Composable
-fun RowScope.TableCell(text: String, weight: Float = 0.6f) {
+fun RowScope.TableCell(text: ()->String, weight: Float = 0.6f) {
     Box(
         modifier = Modifier
             .weight(weight)
             .padding(vertical = 8.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, fontSize = 16.sp, maxLines = 1)
+        Text(text = text(), fontSize = 16.sp, maxLines = 1)
     }
 }
