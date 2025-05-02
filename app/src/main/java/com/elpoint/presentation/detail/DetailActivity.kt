@@ -23,7 +23,7 @@ import com.elpoint.ui.theme.ElPointTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class DetailActivity : ComponentActivity() {
     private val viewModel: DetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
