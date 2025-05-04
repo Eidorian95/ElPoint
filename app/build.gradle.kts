@@ -1,8 +1,9 @@
 plugins {
+    kotlin("kapt")
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.dagger.hilt.android")
-    kotlin("kapt")
+    id ("com.google.gms.google-services")
 }
 
 android {
@@ -75,14 +76,11 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-android-compiler:2.50")
 
-    // Para ViewModel con Hilt
     kapt("androidx.hilt:hilt-compiler:1.0.0")
 
-    // Si usas `@Inject` en Workers de WorkManager con Hilt
     implementation("androidx.hilt:hilt-work:1.2.0")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
-// Integración con Jetpack Compose
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.retrofit)
@@ -91,6 +89,10 @@ dependencies {
 
     testImplementation(libs.mockk) // Para pruebas unitarias
     androidTestImplementation(libs.mockk.android)
+
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-database")
+
 }
 kapt {
     correctErrorTypes = true
