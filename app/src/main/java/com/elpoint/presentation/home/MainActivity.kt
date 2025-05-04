@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: HomeViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel.fetchPoints()
         setContent {
             ElPointTheme {
                 Surface {

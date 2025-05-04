@@ -1,7 +1,9 @@
 package com.elpoint.di
 
 import com.elpoint.data.repository.ForecastRepositoryImpl
+import com.elpoint.data.repository.UserPointsRepositoryImpl
 import com.elpoint.domain.repository.ForecastRepository
+import com.elpoint.domain.repository.UserPointsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -18,4 +20,10 @@ internal abstract class RepositoryModule {
     abstract fun bindForecastRepository(
         impl: ForecastRepositoryImpl
     ): ForecastRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserPointsRepository(
+        impl: UserPointsRepositoryImpl
+    ): UserPointsRepository
 }
