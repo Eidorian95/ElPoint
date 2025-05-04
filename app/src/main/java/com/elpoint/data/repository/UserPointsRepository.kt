@@ -7,6 +7,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -37,13 +38,15 @@ internal class UserPointsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addPoint(point: Point): Boolean = suspendCoroutine { continuation ->
+        val id = point.id.ifEmpty { UUID.randomUUID().toString() }
+        val pointWithId = point.copy(id = id)
+
         pointReference
-            .push()
-            .setValue(point)
+            .child(id)
+            .setValue(pointWithId)
             .addOnSuccessListener { continuation.resume(true) }
             .addOnFailureListener { continuation.resume(false) }
     }
-
     override suspend fun deletePoint(pointId: String): Boolean = suspendCoroutine { continuation ->
         pointReference
             .child(pointId)
