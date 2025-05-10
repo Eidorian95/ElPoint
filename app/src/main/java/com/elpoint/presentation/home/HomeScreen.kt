@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -72,37 +71,41 @@ internal fun HomeScreen(
         )
     ) {
         item(key = "topAppBar") {
-            SearchTopAppBar(
+            HomeTopAppBar(
                 onBackClick = { onBackClick() },
                 onSettingsClick = { }
             )
         }
 
         stickyHeader(key = "stickySearch") {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .background(Color.White)
-            ) {
-                TextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    placeholder = { Text("Buscar...") },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(86.dp)
-                        .padding(vertical = 16.dp, horizontal = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-
-                )
-            }
+            SearchBox(query, onQueryChange)
         }
 
         items(uiModel.points, key = { "point_${it.id}" }) {
-           SurfSpotCard(it) { }
+           SurfSpotCard(it) { onPointClick()}
         }
+    }
+}
+
+@Composable
+private fun SearchBox(query: String, onQueryChange: (String) -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(Color.White)
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Buscar...") },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(86.dp)
+                .padding(vertical = 16.dp, horizontal = 16.dp)
+                .clip(RoundedCornerShape(16.dp)),
+        )
     }
 }
 
@@ -114,29 +117,22 @@ internal fun SurfSpotCard(
 ) {
 
     val FallbackCardColor = Color(0xFF71b3e8)
-    val GradientTopColorStart = Color.Black.copy(alpha = 0.7f)
-    val GradientTopColorEnd = Color.Transparent
     val GradientBottomColorStart = Color.Transparent
-    val GradientBottomColorMid = Color.Black.copy(alpha = 0.5f)
-    val GradientBottomColorEnd = Color.Black.copy(alpha = 0.85f)
+    val GradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
+    val GradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(230.dp) // Ajusta la altura según tus necesidades
+            .height(230.dp)
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
             .clickable { onPointClick(point.id) },
-        shape = RoundedCornerShape(12.dp), // Esquinas redondeadas para la card
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(FallbackCardColor)) {
             var imageLoadSuccess by remember { mutableStateOf(false) }
-
-            // Capa de Color de Fallback (siempre presente, la imagen se dibuja encima)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(FallbackCardColor)
-            )
 
             // Capa de Imagen (si la URL existe)
             if (point.imageUrl.isNotBlank()) {
@@ -153,28 +149,11 @@ internal fun SurfSpotCard(
                 )
             }
 
-            // Gradiente Superior (se dibuja encima de la imagen/color de fallback)
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.45f) // Cubre el 45% superior
-                    .align(Alignment.TopCenter)
+                    .fillMaxSize()
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(GradientTopColorStart, GradientTopColorEnd)
-                        )
-                    )
-            )
-
-            // Gradiente Inferior (se dibuja encima de la imagen/color de fallback)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.55f) // Cubre el 55% inferior
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            // Ajusta estos stops si quieres más control sobre la transición
                             colors = listOf(
                                 GradientBottomColorStart,
                                 GradientBottomColorMid,
@@ -182,30 +161,22 @@ internal fun SurfSpotCard(
                             )
                         )
                     )
-            )
-
-            // Contenido de Texto (se dibuja encima de los gradientes)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.Bottom // Alinea el contenido de texto abajo
+                verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
                     text = point.name,
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 24.sp, // Espacio entre líneas si el nombre es largo
+                    lineHeight = 24.sp,
                     maxLines = 2
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 point.currentForecast?.let { forecast ->
-                    // Información de Olas
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Podrías añadir un Icon() aquí si quisieras
                         Text(
                             text = "Olas: ${forecast.waves.direction.cardinal} ${forecast.waves.height}",
                             color = Color.White.copy(alpha = 0.9f), // Un poco menos opaco que el título
@@ -215,9 +186,7 @@ internal fun SurfSpotCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Información de Viento
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Podrías añadir un Icon() aquí si quisieras
                         Text(
                             text = "Viento: ${forecast.winds.direction.cardinal} ${forecast.winds.speed}",
                             color = Color.White.copy(alpha = 0.9f),
@@ -233,7 +202,7 @@ internal fun SurfSpotCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTopAppBar(
+fun HomeTopAppBar(
     onBackClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {

@@ -1,23 +1,43 @@
 {
   "points": {
     "-N_aBcDeFgHiJkLmNoP": {
-      "name": "Playa La Punta",
-      "latitude": -33.4499,
-      "longitude": -70.65,
-      "imageUrl": "https://ejemplo.com/imagen-lapunta.jpg",
+      "id": "N_aBcDeFgHiJkLmNoP",
+      "name": "Miramar - waikiki",
+      "latitude": 38.2740013,
+      "longitude": -57.8305136,
+      "imageUrl": "https://lh3.googleusercontent.com/p/AF1QipMT8LzOjqs54Aa8GdfzbWJ7zE1UjDLBB857AkbZ=w408-h271-k-no",
       "alarm": true
     },
     "-N_qRsTuVwXyZaBcDe": {
-      "name": "Reñaca",
-      "latitude": -33.0199,
-      "longitude": -71.56,
+      "id": "N_qRsTuVwXyZaBcDe",
+
+      "name": "Escollera cero",
+      "latitude": -38.2596418,
+      "longitude": -57.8063493,
       "imageUrl": "https://ejemplo.com/imagen-renaca.jpg",
       "alarm": false
     },
-    "-N_qRsTuVwXyZaBcDf": {
-      "name": "Arica",
-      "latitude": -18.47,
-      "longitude": -70.31,
+    "-N_qRsTuVwXyZaBaqAwe": {
+      "id": "N_qRsTuVwXyZaBaqAwe",
+      "name": "Luna roja",
+      "latitude": -38.173101,
+      "longitude": -57.640576,
+      "imageUrl": "https://ejemplo.com/imagen-arica.jpg",
+      "alarm": false
+    },
+    "-N_qRsTuVwXyZaBeWXyZaBcDf": {
+      "id": "N_qRsTuVwXyZaBeWXyZaBcDf",
+      "name": "Hoteles chapa",
+      "latitude": -38.2078951,
+      "longitude": -57.694167,
+      "imageUrl": "https://ejemplo.com/imagen-arica.jpg",
+      "alarm": false
+    },
+    "-N_pfDJsJQsTuVwXyZaBcDf": {
+      "id": "N_pfDJsJQsTuVwXyZaBcDf",
+      "name": "Muelle de pescadores de Miramar",
+      "latitude": -38.2838601,
+      "longitude": -57.8354064,
       "imageUrl": "https://ejemplo.com/imagen-arica.jpg",
       "alarm": false
     }

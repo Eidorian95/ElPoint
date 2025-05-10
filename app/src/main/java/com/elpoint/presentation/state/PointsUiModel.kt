@@ -1,9 +1,7 @@
 package com.elpoint.presentation.state
 
 internal data class UserPointsUiModel(
-    val points: List<PointUiModel>,
-
-    )
+    val points: List<PointUiModel>, )
 
 internal data class PointUiModel(
     val id: String,
