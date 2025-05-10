@@ -27,34 +27,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.elpoint.domain.model.Point
+import com.elpoint.presentation.state.UserPointsUiModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeScreen(
+    uiModel: UserPointsUiModel,
     query: String,
     onQueryChange: (String) -> Unit,
     onPointClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val list = listOf(
-        "item-1",
-        "item-2",
-        "item-3",
-        "item-4",
-        "item-5",
-        "item-6",
-        "item-7",
-        "item-8",
-        "item-9",
-        "item-10"
-    )
 
     LazyColumn(
         modifier = Modifier.background(
             Color.White
         )
     ) {
-        item {
+        item(key = "topAppBar") {
             SearchTopAppBar(
                 onBackClick = { onBackClick() },
                 onSettingsClick = { }
@@ -83,7 +74,7 @@ internal fun HomeScreen(
             }
         }
 
-        items(list, key = { "id$it" }) {
+        items(uiModel.points, key = { "point_${it.id}" }) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -96,7 +87,7 @@ internal fun HomeScreen(
                         onPointClick()
                     }
             ) {
-                Text(text = it)
+                Text(text = it.name)
             }
         }
     }
@@ -132,5 +123,7 @@ fun SearchTopAppBar(
 @Composable
 @Preview
 private fun HomeScreenPreview() {
-    HomeScreen("", {}, {}, {})
+    HomeScreen(UserPointsUiModel(
+        points = listOf()
+    ), "", {}, {}, {})
 }

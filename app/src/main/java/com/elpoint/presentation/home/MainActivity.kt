@@ -6,12 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import com.elpoint.presentation.detail.DetailActivity
-import com.elpoint.presentation.detail.DetailInformationScreen
-import com.elpoint.presentation.detail.DetailViewModel
-import com.elpoint.presentation.state.ForecastState
+import com.elpoint.presentation.state.HomeState
 import com.elpoint.ui.theme.ElPointTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +21,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             ElPointTheme {
                 Surface {
-                    HomeScreen(query = "", onQueryChange = {}, onPointClick = {navigateTo()}, onBackClick = { })
+                    val homeState = viewModel.state.collectAsState()
+                    when (val state = homeState.value) {
+                        is HomeState.Loading -> {}
+                        is HomeState.Success -> {
+                            HomeScreen(
+                                uiModel = state.points,
+                                query = "",
+                                onQueryChange = {},
+                                onPointClick = { navigateTo() },
+                                onBackClick = { }
+                            )
+                        }
+                        is HomeState.Error -> {}
+
+                    }
+
                 }
             }
         }

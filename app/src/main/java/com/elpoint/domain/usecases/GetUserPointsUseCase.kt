@@ -7,7 +7,7 @@ import javax.inject.Inject
 internal class GetUserPointsUseCase @Inject constructor(
     private val userPointsRepository: UserPointsRepository
 ){
-    suspend operator fun invoke(): List<Pair<String, Point>> {
+    suspend operator fun invoke(): List<Point> {
         return userPointsRepository.getPoints()
     }
 }
