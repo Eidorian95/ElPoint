@@ -91,8 +91,8 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
 
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
-    implementation("com.google.firebase:firebase-database")
-
+    implementation(libs.firebase.database)
+    implementation(libs.coil.compose)
 }
 kapt {
     correctErrorTypes = true

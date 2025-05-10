@@ -1,11 +1,11 @@
 package com.elpoint.presentation.state
 
-data class UserPointsUiModel(
+internal data class UserPointsUiModel(
     val points: List<PointUiModel>,
 
     )
 
-data class PointUiModel(
+internal data class PointUiModel(
     val id: String,
     val name: String,
     val latitude: Double,
