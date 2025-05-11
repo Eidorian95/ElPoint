@@ -13,7 +13,7 @@ import com.elpoint.presentation.state.ForecastUiModel
 import com.elpoint.presentation.state.HourlyForecastUI
 
 @Composable
-fun DetailInformationScreen(forecast: ForecastUiModel) {
+internal fun DetailInformationScreen(forecast: ForecastUiModel) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         CurrentHeader(forecast.currentForecast)
         HourlyForecast(forecast.nextDaysForecast)

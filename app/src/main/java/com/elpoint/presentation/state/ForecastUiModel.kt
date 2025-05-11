@@ -1,32 +1,32 @@
 package com.elpoint.presentation.state
 
-class ForecastUiModel(
+internal data class ForecastUiModel(
     val currentForecast: HourlyForecastUI?,
     val nextDaysForecast: List<DayForecastUI>,
 )
 
-data class DayForecastUI(
+internal data class DayForecastUI(
     val day: String,
     val hourlyForecast: List<HourlyForecastUI>
 )
-data class HourlyForecastUI(
+internal data class HourlyForecastUI(
     val time: String,
     val waves: WaveDataUI,
     val winds: WindDataUI
 )
 
-data class WaveDataUI(
+internal data class WaveDataUI(
     val direction: DirectionUI,
     val height: String,
     val period: String
 )
 
-data class WindDataUI(
+internal data class WindDataUI(
     val direction: DirectionUI,
     val speed: String,
     val type: String
 )
 
-data class DirectionUI(
+internal  data class DirectionUI(
     val cardinal: String,
 )
