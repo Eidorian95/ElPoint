@@ -16,15 +16,12 @@ import kotlin.coroutines.suspendCoroutine
 internal class UserPointsRepositoryImpl @Inject constructor(
     private val pointReference: DatabaseReference
 ): UserPointsRepository {
-    override suspend fun getPoints(): List<Pair<String, Point>> = suspendCoroutine { continuation ->
+    override suspend fun getPoints(): List <Point> = suspendCoroutine { continuation ->
         pointReference
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val points = snapshot.children.mapNotNull { child ->
-                        val point = child.getValue(Point::class.java)
-                        if (point != null) {
-                            child.key?.let { key -> key to point }
-                        } else null
+                        child.getValue(Point::class.java)
                     }
                     Log.d("USER_POINTS", "SUCCESS")
                     continuation.resume(points)

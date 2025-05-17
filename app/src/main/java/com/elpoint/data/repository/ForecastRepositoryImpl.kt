@@ -20,13 +20,13 @@ internal class ForecastRepositoryImpl @Inject constructor(
 ) : ForecastRepository {
 
     override suspend fun getForecast(lat: Double, lon: Double): Forecast {
-       /* val response = apiService.getForecast(
+       val response = apiService.getForecast(
                 lat = lat,
                 lng = lon,
                 source = "sg",
                 params = "waterTemperature,wavePeriod,waveDirection,waveHeight,windSpeed,windDirection,gust"
-        )*/
-        val response = readJsonFromAssets(context, "forecast_mock.json")
+        )
+       // val response = readJsonFromAssets(context, "forecast_mock.json")
         return response.toDomainModel()
     }
 }
