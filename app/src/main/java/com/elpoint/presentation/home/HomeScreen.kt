@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -113,13 +112,13 @@ private fun SearchBox(query: String, onQueryChange: (String) -> Unit) {
 internal fun SurfSpotCard(
     point: PointUiModel,
     modifier: Modifier = Modifier,
-    onPointClick: (String) -> Unit // Asumimos que pasas el ID al hacer clic
+    onPointClick: (String) -> Unit
 ) {
 
-    val FallbackCardColor = Color(0xFF71b3e8)
-    val GradientBottomColorStart = Color.Transparent
-    val GradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
-    val GradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
+    val fallbackCardColor = Color(0xFF71b3e8)
+    val gradientBottomColorStart = Color.Transparent
+    val gradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
+    val gradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
 
     Card(
         modifier = modifier
@@ -131,18 +130,17 @@ internal fun SurfSpotCard(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().background(FallbackCardColor)) {
+        Box(modifier = Modifier.fillMaxSize().background(fallbackCardColor)) {
             var imageLoadSuccess by remember { mutableStateOf(false) }
 
-            // Capa de Imagen (si la URL existe)
             if (point.imageUrl.isNotBlank()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(point.imageUrl)
-                        .crossfade(true) // Pequeña animación de fundido
+                        .crossfade(true)
                         .build(),
-                    contentDescription = "Imagen de ${point.name}", // Para accesibilidad
-                    contentScale = ContentScale.Crop, // Para que la imagen cubra la Card
+                    contentDescription = "Imagen de ${point.name}",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                     onSuccess = { imageLoadSuccess = true },
                     onError = { imageLoadSuccess = false }
@@ -155,9 +153,9 @@ internal fun SurfSpotCard(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                GradientBottomColorStart,
-                                GradientBottomColorMid,
-                                GradientBottomColorEnd
+                                gradientBottomColorStart,
+                                gradientBottomColorMid,
+                                gradientBottomColorEnd
                             )
                         )
                     )
