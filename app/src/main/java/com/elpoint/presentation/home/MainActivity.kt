@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
                                 query = "",
                                 onQueryChange = {},
                                 onPointClick = { navigateTo() },
-                                onBackClick = { }
+                                onBackClick = { },
+                                onSettingsClick = {}
                             )
                         }
                         is HomeState.Error -> {}
