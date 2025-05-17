@@ -6,11 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,13 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -54,14 +51,27 @@ import com.elpoint.presentation.state.WaveDataUI
 import com.elpoint.presentation.state.WindDataUI
 import com.elpoint.ui.theme.ElPointTheme
 
+private val FallbackCardColor = Color(0xFF71b3e8)
+private val GradientBottomColorStart = Color.Transparent
+private val GradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
+private val GradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
+private val CardGradientBrush = Brush.verticalGradient(
+    colors = listOf(GradientBottomColorStart, GradientBottomColorMid, GradientBottomColorEnd)
+)
+private val TextColorWhiteAlpha90 = Color.White.copy(alpha = 0.9f)
+private val SearchBoxShape = RoundedCornerShape(16.dp)
+private val CardShape = RoundedCornerShape(12.dp)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeScreen(
+    modifier: Modifier = Modifier,
     uiModel: UserPointsUiModel,
     query: String,
     onQueryChange: (String) -> Unit,
-    onPointClick: () -> Unit,
-    onBackClick: () -> Unit
+    onPointClick: (String) -> Unit,
+    onBackClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
 
     LazyColumn(
@@ -71,8 +81,8 @@ internal fun HomeScreen(
     ) {
         item(key = "topAppBar") {
             HomeTopAppBar(
-                onBackClick = { onBackClick() },
-                onSettingsClick = { }
+                onBackClick = onBackClick,
+                onSettingsClick = onSettingsClick
             )
         }
 
@@ -81,29 +91,44 @@ internal fun HomeScreen(
         }
 
         items(uiModel.points, key = { "point_${it.id}" }) {
-           SurfSpotCard(it) { onPointClick()}
+            SurfSpotCard(
+                point = it,
+                onPointClick = { onPointClick(it.id) }
+            )
+
         }
     }
 }
 
 @Composable
-private fun SearchBox(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchBox(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val placeholderText = @Composable { Text("Buscar...") }
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(Color.White)
+            .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         TextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text("Buscar...") },
+            placeholder = placeholderText,
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(86.dp)
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .clip(RoundedCornerShape(16.dp)),
+                .heightIn(min = 56.dp)
+                .clip(SearchBoxShape),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            )
         )
     }
 }
@@ -111,83 +136,73 @@ private fun SearchBox(query: String, onQueryChange: (String) -> Unit) {
 @Composable
 internal fun SurfSpotCard(
     point: PointUiModel,
-    modifier: Modifier = Modifier,
-    onPointClick: (String) -> Unit
+    onPointClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-
-    val fallbackCardColor = Color(0xFF71b3e8)
-    val gradientBottomColorStart = Color.Transparent
-    val gradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
-    val gradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
+    val context = LocalContext.current
+    val imageRequest = remember(point.imageUrl) {
+        ImageRequest.Builder(context)
+            .data(point.imageUrl.ifBlank { null })
+            .crossfade(true)
+            .error(android.R.drawable.ic_menu_gallery) // Ejemplo de placeholder/error
+            .build()
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .height(230.dp)
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
-            .clickable { onPointClick(point.id) },
-        shape = RoundedCornerShape(12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onPointClick),
+        shape = CardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize().background(fallbackCardColor)) {
-            var imageLoadSuccess by remember { mutableStateOf(false) }
-
+        Box(modifier = Modifier.fillMaxSize()) {
             if (point.imageUrl.isNotBlank()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(point.imageUrl)
-                        .crossfade(true)
-                        .build(),
+                    model = imageRequest,
                     contentDescription = "Imagen de ${point.name}",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    onSuccess = { imageLoadSuccess = true },
-                    onError = { imageLoadSuccess = false }
+                    modifier = Modifier.fillMaxSize()
                 )
+            } else {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(FallbackCardColor))
             }
 
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                gradientBottomColorStart,
-                                gradientBottomColorMid,
-                                gradientBottomColorEnd
-                            )
-                        )
-                    )
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.Bottom
+                    .background(brush = CardGradientBrush)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Text(
-                    text = point.name,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 24.sp,
-                    maxLines = 2
-                )
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Text(
+                        text = point.name,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 24.sp,
+                        maxLines = 2
+                    )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                point.currentForecast?.let { forecast ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    point.currentForecast?.let { forecast ->
                         Text(
                             text = "Olas: ${forecast.waves.direction.cardinal} ${forecast.waves.height}",
-                            color = Color.White.copy(alpha = 0.9f), // Un poco menos opaco que el título
+                            color = TextColorWhiteAlpha90,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Viento: ${forecast.winds.direction.cardinal} ${forecast.winds.speed}",
-                            color = Color.White.copy(alpha = 0.9f),
+                            color = TextColorWhiteAlpha90,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -229,113 +244,118 @@ fun HomeTopAppBar(
 @Preview
 private fun HomeScreenPreview() {
     HomeScreen(
-        UserPointsUiModel(
-        points = listOf(
-            PointUiModel(
-                id = "spot_001",
-                name = "Mavericks, California",
-                latitude = 37.4903,
-                longitude = -122.5084,
-                imageUrl = "https://images.unsplash.com/photo-1588098860521-6131236f7907?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80",
-                alarm = true,
-                currentForecast = HourlyForecastUI(
-                    time = "09:00",
-                    waves = WaveDataUI(
-                        direction = DirectionUI("NNO"),
-                        height = "15-20 ft",
-                        period = "17s"
-                    ),
-                    winds = WindDataUI(
-                        direction = DirectionUI("N"),
-                        speed = "5-10 mph",
-                        type = "Light Offshore"
+        uiModel = UserPointsUiModel(
+            points = listOf(
+                PointUiModel(
+                    id = "spot_001",
+                    name = "Mavericks, California",
+                    latitude = 37.4903,
+                    longitude = -122.5084,
+                    imageUrl = "https://images.unsplash.com/photo-1588098860521-6131236f7907?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80",
+                    alarm = true,
+                    currentForecast = HourlyForecastUI(
+                        time = "09:00",
+                        waves = WaveDataUI(
+                            direction = DirectionUI("NNO"),
+                            height = "15-20 ft",
+                            period = "17s"
+                        ),
+                        winds = WindDataUI(
+                            direction = DirectionUI("N"),
+                            speed = "5-10 mph",
+                            type = "Light Offshore"
+                        )
                     )
-                )
-            ),
-            PointUiModel(
-                id = "spot_002",
-                name = "Playa Grande, Mar del Plata",
-                latitude = -38.0234,
-                longitude = -57.5219,
-                imageUrl = "", // Sin imagen, se usará el color de fallback
-                alarm = false,
-                currentForecast = HourlyForecastUI(
-                    time = "14:00",
-                    waves = WaveDataUI(
-                        direction = DirectionUI("SE"),
-                        height = "1-1.5 m",
-                        period = "9s"
-                    ),
-                    winds = WindDataUI(
-                        direction = DirectionUI("E"),
-                        speed = "15 km/h",
-                        type = "Onshore"
+                ),
+                PointUiModel(
+                    id = "spot_002",
+                    name = "Playa Grande, Mar del Plata",
+                    latitude = -38.0234,
+                    longitude = -57.5219,
+                    imageUrl = "", // Sin imagen, se usará el color de fallback
+                    alarm = false,
+                    currentForecast = HourlyForecastUI(
+                        time = "14:00",
+                        waves = WaveDataUI(
+                            direction = DirectionUI("SE"),
+                            height = "1-1.5 m",
+                            period = "9s"
+                        ),
+                        winds = WindDataUI(
+                            direction = DirectionUI("E"),
+                            speed = "15 km/h",
+                            type = "Onshore"
+                        )
                     )
-                )
-            ),
-            PointUiModel(
-                id = "spot_003",
-                name = "Jeffreys Bay, Sudáfrica",
-                latitude = -34.0489,
-                longitude = 24.9200,
-                imageUrl = "https://images.unsplash.com/photo-1605904434991-35097e0ba5f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-                alarm = false,
-                currentForecast = null // Sin pronóstico actual
-            ),
-            PointUiModel(
-                id = "spot_004",
-                name = "The Pass, Byron Bay, Australia",
-                latitude = -28.6399,
-                longitude = 153.6168,
-                imageUrl = "https://images.unsplash.com/photo-1516701614002-769a147270ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-                alarm = true,
-                currentForecast = HourlyForecastUI(
-                    time = "11:30",
-                    waves = WaveDataUI(
-                        direction = DirectionUI("NE"),
-                        height = "2-3 ft",
-                        period = "10s"
-                    ),
-                    winds = WindDataUI(
-                        direction = DirectionUI("NNE"),
-                        speed = "8 knots",
-                        type = "Light Cross-shore"
+                ),
+                PointUiModel(
+                    id = "spot_003",
+                    name = "Jeffreys Bay, Sudáfrica",
+                    latitude = -34.0489,
+                    longitude = 24.9200,
+                    imageUrl = "https://images.unsplash.com/photo-1605904434991-35097e0ba5f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                    alarm = false,
+                    currentForecast = null // Sin pronóstico actual
+                ),
+                PointUiModel(
+                    id = "spot_004",
+                    name = "The Pass, Byron Bay, Australia",
+                    latitude = -28.6399,
+                    longitude = 153.6168,
+                    imageUrl = "https://images.unsplash.com/photo-1516701614002-769a147270ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+                    alarm = true,
+                    currentForecast = HourlyForecastUI(
+                        time = "11:30",
+                        waves = WaveDataUI(
+                            direction = DirectionUI("NE"),
+                            height = "2-3 ft",
+                            period = "10s"
+                        ),
+                        winds = WindDataUI(
+                            direction = DirectionUI("NNE"),
+                            speed = "8 knots",
+                            type = "Light Cross-shore"
+                        )
                     )
-                )
-            ),
-            PointUiModel(
-                id = "spot_005",
-                name = "Punta de Lobos, Pichilemu, Chile (Un lugar increíble con olas largas y potentes)",
-                latitude = -34.4058,
-                longitude = -72.0503,
-                imageUrl = "https://images.unsplash.com/photo-1562039943-672941527005?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80",
-                alarm = false,
-                currentForecast = HourlyForecastUI(
-                    time = "16:00",
-                    waves = WaveDataUI(
-                        direction = DirectionUI("SO"),
-                        height = "3-4 m",
-                        period = "14s"
-                    ),
-                    winds = WindDataUI(
-                        direction = DirectionUI("S"),
-                        speed = "12-18 km/h",
-                        type = "Offshore"
+                ),
+                PointUiModel(
+                    id = "spot_005",
+                    name = "Punta de Lobos, Pichilemu, Chile (Un lugar increíble con olas largas y potentes)",
+                    latitude = -34.4058,
+                    longitude = -72.0503,
+                    imageUrl = "https://images.unsplash.com/photo-1562039943-672941527005?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80",
+                    alarm = false,
+                    currentForecast = HourlyForecastUI(
+                        time = "16:00",
+                        waves = WaveDataUI(
+                            direction = DirectionUI("SO"),
+                            height = "3-4 m",
+                            period = "14s"
+                        ),
+                        winds = WindDataUI(
+                            direction = DirectionUI("S"),
+                            speed = "12-18 km/h",
+                            type = "Offshore"
+                        )
                     )
+                ),
+                PointUiModel(
+                    id = "spot_006",
+                    name = "Secret Spot (No Image, No Forecast)",
+                    latitude = 10.1234,
+                    longitude = -10.5678,
+                    imageUrl = "invalid_url_should_fallback.jpg", // URL inválida para probar fallback
+                    alarm = false,
+                    currentForecast = null
                 )
-            ),
-            PointUiModel(
-                id = "spot_006",
-                name = "Secret Spot (No Image, No Forecast)",
-                latitude = 10.1234,
-                longitude = -10.5678,
-                imageUrl = "invalid_url_should_fallback.jpg", // URL inválida para probar fallback
-                alarm = false,
-                currentForecast = null
             )
-        )
 
-    ), "", {}, {}, {})
+        ),
+        query = "",
+        onQueryChange = {},
+        onPointClick = {},
+        onBackClick = {},
+        onSettingsClick = {})
 }
 
 @Composable
