@@ -32,6 +32,7 @@
             android:name=".presentation.detail.DetailActivity"
             android:theme="@style/Theme.ElPoint">
         </activity>
+        <profileable android:shell="true" />
     </application>
 
 </manifest>
