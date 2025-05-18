@@ -143,7 +143,7 @@ internal fun HourlyForecastRowItem(
         modifier = modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(vertical = 8.dp), // Consistent padding
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -54,7 +54,7 @@ internal fun CurrentHeader(
             .wrapContentHeight()
             .clip(HeaderShape)
             .background(HeaderBackgroundColor)
-            .padding(bottom = 16.dp) // Added padding for content spacing from bottom edge
+            .padding(bottom = 16.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 /*            Text(
@@ -76,14 +76,14 @@ internal fun CurrentHeader(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly, // Use SpaceEvenly for better distribution
-                verticalAlignment = Alignment.Top // Align items to the top
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top
             ) {
                 val waves = currentForecast?.waves
                 val winds = currentForecast?.winds
 
                 CurrentForecastItem(
-                    icon = R.drawable.waves, // Replace with your actual drawable
+                    icon = R.drawable.waves,
                     iconDesc = "Waves",
                     direction = waves?.direction?.cardinal ?: "-",
                     valuePrimary = waves?.height ?: "-",
@@ -100,11 +100,11 @@ internal fun CurrentHeader(
                 )
 
                 CurrentForecastItem(
-                    icon = R.drawable.winds, // Replace with your actual drawable
+                    icon = R.drawable.winds,
                     iconDesc = "Winds",
                     direction = winds?.direction?.cardinal ?: "-",
                     valuePrimary = winds?.speed ?: "-",
-                    valueSecondary = winds?.type ?: "-", // Using type from WindDataUI
+                    valueSecondary = winds?.type ?: "-",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -123,14 +123,14 @@ private fun CurrentForecastItem(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 8.dp), // Add padding for spacing
+        modifier = modifier.padding(horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Image(
             painter = painterResource(id = icon),
             contentDescription = iconDesc,
-            modifier = Modifier.size(40.dp) // Slightly smaller icon
+            modifier = Modifier.size(40.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -141,12 +141,10 @@ private fun CurrentForecastItem(
             Text(
                 text = direction,
                 color = TextColorWhite,
-                fontSize = 60.sp, // Adjusted size
+                fontSize = 60.sp,
                 fontWeight = FontWeight.Bold
             )
-            // Assuming R.drawable.arrowup is a directional arrow.
-            // If it needs to rotate, this would require a different approach (e.g., ImageVector with Modifier.rotate)
-            Image(
+             Image(
                 painter = painterResource(id = R.drawable.arrowup), // Replace if dynamic
                 contentDescription = "Direction indicator",
                 modifier = Modifier.size(60.dp) // Adjusted size
