@@ -5,8 +5,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.elpoint.presentation.detail.DetailActivity
 import com.elpoint.presentation.state.HomeState
 import com.elpoint.ui.theme.ElPointTheme
@@ -35,9 +38,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         is HomeState.Error -> {}
-
                     }
-
                 }
             }
         }

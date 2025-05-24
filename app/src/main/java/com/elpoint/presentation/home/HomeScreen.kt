@@ -28,11 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -52,12 +52,6 @@ import com.elpoint.presentation.state.WindDataUI
 import com.elpoint.ui.theme.ElPointTheme
 
 private val FallbackCardColor = Color(0xFF71b3e8)
-private val GradientBottomColorStart = Color.Transparent
-private val GradientBottomColorMid = Color.Black.copy(alpha = 0.3f)
-private val GradientBottomColorEnd = Color.Black.copy(alpha = 0.75f)
-private val CardGradientBrush = Brush.verticalGradient(
-    colors = listOf(GradientBottomColorStart, GradientBottomColorMid, GradientBottomColorEnd)
-)
 private val TextColorWhiteAlpha90 = Color.White.copy(alpha = 0.9f)
 private val SearchBoxShape = RoundedCornerShape(16.dp)
 private val CardShape = RoundedCornerShape(12.dp)
@@ -74,11 +68,7 @@ internal fun HomeScreen(
     onSettingsClick: () -> Unit,
 ) {
 
-    LazyColumn(
-        modifier = Modifier.background(
-            Color.White
-        )
-    ) {
+    LazyColumn(modifier = modifier) {
         item(key = "topAppBar") {
             HomeTopAppBar(
                 onBackClick = onBackClick,
@@ -112,7 +102,6 @@ private fun SearchBox(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(Color.White)
             .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         TextField(
@@ -144,7 +133,6 @@ internal fun SurfSpotCard(
         ImageRequest.Builder(context)
             .data(point.imageUrl.ifBlank { null })
             .crossfade(true)
-            .error(android.R.drawable.ic_menu_gallery) // Ejemplo de placeholder/error
             .build()
     }
 
@@ -154,61 +142,59 @@ internal fun SurfSpotCard(
             .height(230.dp)
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable(onClick = onPointClick),
+        colors = CardDefaults.cardColors(
+            containerColor = FallbackCardColor,
+            contentColor = Color.Transparent,
+            disabledContentColor = Color.Transparent,
+        ),
         shape = CardShape,
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+        ) {
             if (point.imageUrl.isNotBlank()) {
                 AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
                     model = imageRequest,
                     contentDescription = "Imagen de ${point.name}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    contentScale = ContentScale.Crop
                 )
-            } else {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(FallbackCardColor))
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(brush = CardGradientBrush)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(start = 16.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.Bottom
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
+                Text(
+                    text = point.name,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 24.sp,
+                    maxLines = 2
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                point.currentForecast?.let { forecast ->
                     Text(
-                        text = point.name,
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 24.sp,
-                        maxLines = 2
+                        text = "Olas: ${forecast.waves.direction.cardinal} ${forecast.waves.height}",
+                        color = TextColorWhiteAlpha90,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    point.currentForecast?.let { forecast ->
-                        Text(
-                            text = "Olas: ${forecast.waves.direction.cardinal} ${forecast.waves.height}",
-                            color = TextColorWhiteAlpha90,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Viento: ${forecast.winds.direction.cardinal} ${forecast.winds.speed}",
-                            color = TextColorWhiteAlpha90,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Viento: ${forecast.winds.direction.cardinal} ${forecast.winds.speed}",
+                        color = TextColorWhiteAlpha90,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
+
         }
     }
 }
@@ -220,6 +206,10 @@ fun HomeTopAppBar(
     onSettingsClick: () -> Unit
 ) {
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        ),
         title = {
             Text(
                 text = "El Point",
@@ -228,7 +218,9 @@ fun HomeTopAppBar(
             )
         },
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
+            IconButton(
+                onClick = onBackClick,
+            ) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Volver")
             }
         },
@@ -244,6 +236,9 @@ fun HomeTopAppBar(
 @Preview
 private fun HomeScreenPreview() {
     HomeScreen(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(Color.White),
         uiModel = UserPointsUiModel(
             points = listOf(
                 PointUiModel(
@@ -376,7 +371,11 @@ fun SurfSpotCardPreviewNoImage() {
             )
     )
     ElPointTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(
+            modifier = Modifier
+                .padding(16.dp)
+                .background(Color.White)
+        ) {
             SurfSpotCard(point = samplePoint, onPointClick = {})
         }
     }
