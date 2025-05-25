@@ -23,7 +23,6 @@ class MainActivity : ComponentActivity() {
         viewModel.fetchPoints()
         setContent {
             ElPointTheme {
-                Surface {
                     val homeState = viewModel.state.collectAsState()
                     when (val state = homeState.value) {
                         is HomeState.Loading -> {}
@@ -39,7 +38,6 @@ class MainActivity : ComponentActivity() {
                         }
                         is HomeState.Error -> {}
                     }
-                }
             }
         }
     }

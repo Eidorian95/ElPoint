@@ -38,7 +38,6 @@ import com.elpoint.presentation.state.WaveDataUI
 import com.elpoint.presentation.state.WindDataUI
 import kotlinx.coroutines.launch
 
-private val RowBackgroundEven = Color(0xFFf0f0f0)
 private val RowBackgroundOdd = Color.LightGray
 private val TableHeaderBackgroundColor = Color(0xFF71b3e8)
 private val TextColorWhite = Color.White
@@ -50,22 +49,20 @@ internal fun ColumnScope.HourlyForecastPager(daysForecast: List<DayForecastUI>) 
     val pagerState = rememberPagerState(pageCount = { daysForecast.size })
     val dayTitles = remember(daysForecast) { daysForecast.map { it.day } }
 
-
         if (dayTitles.isNotEmpty()) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = Color.Transparent,
             ) {
                 dayTitles.forEachIndexed { index, title ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+                                pagerState.scrollToPage(index)
                             }
                         },
-                        text = { Text(text = title, style = MaterialTheme.typography.labelLarge) }
+                        text = { Text(text = title, style = MaterialTheme.typography.labelLarge) },
                     )
                 }
             }
@@ -89,10 +86,13 @@ internal fun ColumnScope.HourlyForecastPager(daysForecast: List<DayForecastUI>) 
                     key = { "Forecast_time_${it.time}" }
                 ) {
                     val backgroundColor =
-                        if (dayData.hourlyForecast.indexOf(it) % 2 == 0) RowBackgroundEven else RowBackgroundOdd
+                        if (dayData.hourlyForecast.indexOf(it) % 2 == 0) Color.Transparent else RowBackgroundOdd
                     HourlyForecastRowItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(backgroundColor)
+                            .padding(vertical = 8.dp),
                         forecast = it,
-                        backgroundColor = backgroundColor
                     )
                 }
             }
@@ -136,14 +136,10 @@ private fun RowScope.TableHeaderCell(
 @Composable
 internal fun HourlyForecastRowItem(
     forecast: HourlyForecastUI,
-    backgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(backgroundColor)
-            .padding(vertical = 8.dp),
+        modifier = modifier ,
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -166,7 +162,8 @@ private fun RowScope.TableCellItem(text: String) {
         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         style = MaterialTheme.typography.bodyMedium,
         maxLines = 1,
-        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        color = Color.Black
     )
 }
 
