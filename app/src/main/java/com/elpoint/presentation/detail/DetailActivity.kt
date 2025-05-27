@@ -31,14 +31,13 @@ class DetailActivity : ComponentActivity() {
         viewModel.fetchForecast()
         setContent {
             ElPointTheme {
-                val state = viewModel.state.collectAsState()
-                Surface {
+                    val state = viewModel.state.collectAsState()
                     when (val value = state.value) {
-                        ForecastState.Loading -> {
+                        Loading -> {
                             Text(text = "Loading")
                         }
 
-                        is ForecastState.Success -> {
+                        is Success -> {
                             DetailInformationScreen(value.forecast)
                         }
 
@@ -48,6 +47,5 @@ class DetailActivity : ComponentActivity() {
                     }
                 }
             }
-        }
     }
 }

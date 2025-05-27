@@ -52,8 +52,8 @@ internal fun CurrentHeader(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(HeaderShape)
             .background(HeaderBackgroundColor)
+            .clip(HeaderShape)
             .padding(bottom = 16.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -93,9 +93,9 @@ internal fun CurrentHeader(
 
                 Divider(
                     modifier = Modifier
-                        .height(150.dp) // Adjusted height
-                        .width(1.dp)
-                        .align(Alignment.CenterVertically), // Center divider
+                        .height(150.dp)
+                        .width(2.dp)
+                        .align(Alignment.CenterVertically),
                     color = DividerColorWhite
                 )
 
