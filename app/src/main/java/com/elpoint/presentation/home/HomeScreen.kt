@@ -72,10 +72,11 @@ internal fun HomeScreen(
     onPointClick: (String) -> Unit,
     onBackClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onSearchBarClick: () -> Unit
 ) {
 
     LazyColumn(
-        modifier = Modifier.background(
+        modifier = modifier.background(
             Color.White
         )
     ) {
@@ -87,7 +88,7 @@ internal fun HomeScreen(
         }
 
         stickyHeader(key = "stickySearch") {
-            SearchBox(query, onQueryChange)
+            SearchBox(query = query, onQueryChange = { onQueryChange }) { onSearchBarClick() }
         }
 
         items(uiModel.points, key = { "point_${it.id}" }) {
@@ -102,9 +103,10 @@ internal fun HomeScreen(
 
 @Composable
 private fun SearchBox(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit
 ) {
     val placeholderText = @Composable { Text("Buscar...") }
 
@@ -112,8 +114,11 @@ private fun SearchBox(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(Color.White)
+            .background(Color.Red)
             .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable {
+                onClick()
+            }
     ) {
         TextField(
             value = query,
@@ -166,9 +171,11 @@ internal fun SurfSpotCard(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(FallbackCardColor))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(FallbackCardColor)
+                )
             }
 
             Box(
@@ -355,7 +362,9 @@ private fun HomeScreenPreview() {
         onQueryChange = {},
         onPointClick = {},
         onBackClick = {},
-        onSettingsClick = {})
+        onSettingsClick = {},
+        onSearchBarClick = {}
+    )
 }
 
 @Composable

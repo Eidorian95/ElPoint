@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import com.elpoint.presentation.detail.DetailActivity
+import com.elpoint.presentation.search.SearchPointActivity
 import com.elpoint.presentation.state.HomeState
 import com.elpoint.ui.theme.ElPointTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,9 +30,10 @@ class MainActivity : ComponentActivity() {
                                 uiModel = state.points,
                                 query = "",
                                 onQueryChange = {},
-                                onPointClick = { navigateTo() },
+                                onPointClick = { goToDetailScreen() },
                                 onBackClick = { },
-                                onSettingsClick = {}
+                                onSettingsClick = {},
+                                onSearchBarClick = {goToSearchScreen() }
                             )
                         }
                         is HomeState.Error -> {}
@@ -43,8 +45,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun navigateTo(){
+    private fun goToDetailScreen(){
         val intent = Intent(this, DetailActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun goToSearchScreen(){
+        val intent = Intent(this, SearchPointActivity::class.java)
         startActivity(intent)
     }
 }

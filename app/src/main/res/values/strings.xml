@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ElPoint</string>
+    <string name="title_activity_seach_point">SeachPointActivity</string>
 </resources>
