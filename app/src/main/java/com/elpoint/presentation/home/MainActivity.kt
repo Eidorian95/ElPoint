@@ -30,12 +30,9 @@ class MainActivity : ComponentActivity() {
                         is HomeState.Success -> {
                             HomeScreen(
                                 uiModel = state.points,
-                                query = "",
-                                onQueryChange = {},
                                 onPointClick = { goToDetailScreen() },
                                 onBackClick = { },
                                 onSettingsClick = {},
-                                onSearchBarClick = {goToSearchScreen() }
                             )
                         }
                         is HomeState.Error -> {}

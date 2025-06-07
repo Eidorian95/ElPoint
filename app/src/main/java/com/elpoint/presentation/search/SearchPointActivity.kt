@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.elpoint.presentation.search.ui.theme.ElPointTheme
+import com.google.android.gms.maps.GoogleMapOptions
 import com.google.maps.android.compose.GoogleMap
 
 class SearchPointActivity : ComponentActivity() {
@@ -37,11 +39,15 @@ internal fun PointMap() {
 
     Box( modifier = Modifier
         .fillMaxSize()
+        .systemBarsPadding()
     ) {
 
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            onMapLoaded = { isMapLoaded = true }
+            onMapLoaded = { isMapLoaded = true },
+            googleMapOptionsFactory = {
+                GoogleMapOptions().mapId("af43105a3bd1a3c3c025bb1a")
+            }
         )
     }
 }
