@@ -174,7 +174,6 @@ fun HomeTopAppBar(
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         ),
         title = {},
