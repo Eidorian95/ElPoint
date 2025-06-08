@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id ("com.google.gms.google-services")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -46,7 +47,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
     packaging {
         resources {
@@ -72,6 +73,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.material)
+    implementation(libs.places)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -92,7 +95,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
 
-    testImplementation(libs.mockk) // Para pruebas unitarias
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.mockk.android)
 
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))

@@ -56,7 +56,6 @@ import com.elpoint.ui.theme.ElPointTheme
 
 private val FallbackCardColor = Color(0xFF71b3e8)
 private val TextColorWhiteAlpha90 = Color.White.copy(alpha = 0.9f)
-private val SearchBoxShape = RoundedCornerShape(16.dp)
 private val CardShape = RoundedCornerShape(12.dp)
 
 @OptIn(ExperimentalFoundationApi::class)

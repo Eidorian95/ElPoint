@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
                                 uiModel = state.points,
                                 onPointClick = { goToDetailScreen() },
                                 onBackClick = { },
+                                onSearchBarClick = { goToSearchScreen() },
                                 onSettingsClick = {},
                             )
                         }
