@@ -29,6 +29,7 @@ class DetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.fetchForecast()
+        enableEdgeToEdge()
         setContent {
             ElPointTheme {
                     val state = viewModel.state.collectAsState()

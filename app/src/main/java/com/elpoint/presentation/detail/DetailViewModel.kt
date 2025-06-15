@@ -1,6 +1,7 @@
 package com.elpoint.presentation.detail
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elpoint.domain.model.Direction
@@ -28,16 +29,21 @@ import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 internal class DetailViewModel @Inject constructor(
-    private val getForecastUseCase: GetForecastUseCase
+    private val getForecastUseCase: GetForecastUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ForecastState>(ForecastState.Loading)
     val state: StateFlow<ForecastState> = _state
 
-    fun fetchForecast(lat: Double = -38.2753982, lon: Double = -57.8324016) {
+    private val lat = savedStateHandle.get<Double>("PLACE_LAT") ?: 0.0
+    private val long = savedStateHandle.get<Double>("PLACE_LNG") ?: 0.0
+    private val name = savedStateHandle.get<String>("PLACE_NAME") ?: ""
+
+    fun fetchForecast() {
         viewModelScope.launch {
             try {
-                val forecast = getForecastUseCase(lat, lon)
+                val forecast = getForecastUseCase(lat = lat, lon = long)
                 _state.value = ForecastState.Success(forecast.toUIModel())
                 Log.d("FORESCAST RESPONSE", "${forecast.hours}")
             } catch (e: Exception) {
@@ -74,6 +80,7 @@ internal class DetailViewModel @Inject constructor(
             }
 
         return ForecastUiModel(
+            name = this@DetailViewModel.name,
             currentForecast = current,
             nextDaysForecast = nextDaysForecast
         )

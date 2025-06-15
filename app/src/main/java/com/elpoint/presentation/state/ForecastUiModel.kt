@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 internal data class ForecastUiModel(
+    val name: String,
     val currentForecast: HourlyForecastUI?,
     val nextDaysForecast: List<DayForecastUI>,
 )
