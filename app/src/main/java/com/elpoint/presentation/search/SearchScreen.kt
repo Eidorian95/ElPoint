@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -49,8 +47,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 
-private val SearchBoxShape = RoundedCornerShape(16.dp)
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun SearchScreen(
@@ -59,7 +55,6 @@ internal fun SearchScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-34.5623139, -58.4771507), 4f)
@@ -71,7 +66,7 @@ internal fun SearchScreen(
             .systemBarsPadding()
     ) {
         stickyHeader {
-            SearchBox(query = searchQuery, onQueryChange = viewModel::onQueryChanged, isLoading)
+            SearchBox(query = searchQuery, onQueryChange = viewModel::onQueryChanged)
         }
         item {
             GoogleMap(
@@ -101,7 +96,6 @@ internal fun SearchScreen(
                 onClick = { onSuggestionClick(suggestion) }
             )
         }
-
     }
 }
 
@@ -109,7 +103,6 @@ internal fun SearchScreen(
 private fun SearchBox(
     query: String,
     onQueryChange: (String) -> Unit,
-    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -132,17 +125,11 @@ private fun SearchBox(
                 disabledIndicatorColor = Color.Transparent
             ),
             trailingIcon = {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
+
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Buscar"
                     )
-                }
             }
         )
     }
