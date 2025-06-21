@@ -23,6 +23,7 @@ internal fun DetailInformationScreen(forecast: ForecastUiModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
     ) {
         CurrentHeader(currentForecast = forecast.currentForecast, pointName = forecast.name)
         HourlyForecastPager(forecast.nextDaysForecast)
