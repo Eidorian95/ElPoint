@@ -24,7 +24,7 @@ internal fun DetailInformationScreen(forecast: ForecastUiModel) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        CurrentHeader(forecast.currentForecast)
+        CurrentHeader(currentForecast = forecast.currentForecast, pointName = forecast.name)
         HourlyForecastPager(forecast.nextDaysForecast)
     }
 }
@@ -35,6 +35,7 @@ private fun HourlyForecastPreview() {
     Box(modifier = Modifier.background(Color.White)) {
         DetailInformationScreen(
             forecast = ForecastUiModel(
+                name = "Waikiki Miramar",
                 currentForecast = getMock(),
                 nextDaysForecast = getDaysMock()
             )

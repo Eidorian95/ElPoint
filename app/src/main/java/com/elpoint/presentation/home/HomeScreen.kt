@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +19,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +56,6 @@ import com.elpoint.ui.theme.ElPointTheme
 
 private val FallbackCardColor = Color(0xFF71b3e8)
 private val TextColorWhiteAlpha90 = Color.White.copy(alpha = 0.9f)
-private val SearchBoxShape = RoundedCornerShape(16.dp)
 private val CardShape = RoundedCornerShape(12.dp)
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -61,23 +63,19 @@ private val CardShape = RoundedCornerShape(12.dp)
 internal fun HomeScreen(
     modifier: Modifier = Modifier,
     uiModel: UserPointsUiModel,
-    query: String,
-    onQueryChange: (String) -> Unit,
     onPointClick: (String) -> Unit,
     onBackClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onSearchBarClick: () -> Unit
 ) {
 
     LazyColumn(modifier = modifier) {
-        item(key = "topAppBar") {
+        stickyHeader(key = "topAppBar") {
             HomeTopAppBar(
                 onBackClick = onBackClick,
-                onSettingsClick = onSettingsClick
+                onSettingsClick = onSettingsClick,
+                onSearchBarClick = onSearchBarClick
             )
-        }
-
-        stickyHeader(key = "stickySearch") {
-            SearchBox(query, onQueryChange)
         }
 
         items(uiModel.points, key = { "point_${it.id}" }) {
@@ -87,38 +85,6 @@ internal fun HomeScreen(
             )
 
         }
-    }
-}
-
-@Composable
-private fun SearchBox(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val placeholderText = @Composable { Text("Buscar...") }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-    ) {
-        TextField(
-            value = query,
-            onValueChange = onQueryChange,
-            placeholder = placeholderText,
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp)
-                .clip(SearchBoxShape),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
-        )
     }
 }
 
@@ -135,7 +101,6 @@ internal fun SurfSpotCard(
             .crossfade(true)
             .build()
     }
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -148,9 +113,10 @@ internal fun SurfSpotCard(
             disabledContentColor = Color.Transparent,
         ),
         shape = CardShape,
-        ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
         ) {
             if (point.imageUrl.isNotBlank()) {
                 AsyncImage(
@@ -203,20 +169,14 @@ internal fun SurfSpotCard(
 @Composable
 fun HomeTopAppBar(
     onBackClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onSearchBarClick: () -> Unit
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         ),
-        title = {
-            Text(
-                text = "El Point",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        },
+        title = {},
         navigationIcon = {
             IconButton(
                 onClick = onBackClick,
@@ -225,6 +185,9 @@ fun HomeTopAppBar(
             }
         },
         actions = {
+            IconButton(onClick = onSearchBarClick) {
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
+            }
             IconButton(onClick = onSettingsClick) {
                 Icon(imageVector = Icons.Default.Settings, contentDescription = "Configuración")
             }
@@ -346,11 +309,11 @@ private fun HomeScreenPreview() {
             )
 
         ),
-        query = "",
-        onQueryChange = {},
         onPointClick = {},
         onBackClick = {},
-        onSettingsClick = {})
+        onSettingsClick = {},
+        onSearchBarClick = {}
+    )
 }
 
 @Composable

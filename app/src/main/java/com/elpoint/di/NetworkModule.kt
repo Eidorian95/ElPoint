@@ -1,7 +1,10 @@
 package com.elpoint.di
 
+import android.content.Context
 import com.elpoint.data.remote.ApiService
 import com.elpoint.data.remote.RetrofitClient
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -9,6 +12,7 @@ import com.google.firebase.database.database
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import javax.inject.Singleton
@@ -39,5 +43,11 @@ internal object NetworkModule {
     @Singleton
     fun providesFirebasePointReference(dataBase:FirebaseDatabase): DatabaseReference {
         return dataBase.getReference("points")
+    }
+
+    @Provides
+    @Singleton
+    fun providePlacesClient(@ApplicationContext context: Context): PlacesClient {
+        return Places.createClient(context)
     }
 }

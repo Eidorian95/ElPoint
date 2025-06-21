@@ -46,6 +46,7 @@ private val DividerColorWhite = Color.White
 @Composable
 internal fun CurrentHeader(
     currentForecast: HourlyForecastUI?,
+    pointName:String,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -55,18 +56,19 @@ internal fun CurrentHeader(
             .background(HeaderBackgroundColor)
             .clip(HeaderShape)
             .padding(bottom = 16.dp)
+            .systemBarsPadding()
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-/*            Text(
+            Text(
                 modifier = Modifier
                     .systemBarsPadding() // Applies padding for status bar
                     .padding(top = 16.dp),
-                text = pointName, // Display point name
+                text = pointName,
                 color = TextColorWhite,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(8.dp))*/
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Ahora: ${currentForecast?.time.orEmpty()} hs",
                 color = TextColorWhite,
@@ -170,6 +172,7 @@ private fun CurrentForecastItem(
 private fun HeaderPreview() {
     Box {
         CurrentHeader(
+            pointName = "waikiki Miramar",
             currentForecast = HourlyForecastUI(
                 time = "6", waves = WaveDataUI(
                     direction = DirectionUI("N"),
