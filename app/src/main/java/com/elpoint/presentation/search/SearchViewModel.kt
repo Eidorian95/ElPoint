@@ -2,10 +2,14 @@ package com.elpoint.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elpoint.data.repository.PermissionDeniedException
 import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
+import com.elpoint.domain.usecases.GetAddressFromCoordinatesUseCase
+import com.elpoint.domain.usecases.GetCurrentLocationUseCase
 import com.elpoint.domain.usecases.GetPlaceDetailsUseCase
 import com.elpoint.domain.usecases.SearchPlacesUseCase
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -22,14 +26,18 @@ import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
-class SearchViewModel @Inject constructor(
+internal class SearchViewModel @Inject constructor(
     private val searchPlacesUseCase: SearchPlacesUseCase,
-    private val getPlaceDetailsUseCase: GetPlaceDetailsUseCase
+    private val getAddressFromCoordinatesUseCase: GetAddressFromCoordinatesUseCase,
+    private val getPlaceDetailsUseCase: GetPlaceDetailsUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase
 ) : ViewModel() {
 
     sealed class NavigationEvent {
         data class ToDetailScreen(val details: PlaceDetails) : NavigationEvent()
     }
+    private val _uiEvent = Channel<UiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -42,7 +50,6 @@ class SearchViewModel @Inject constructor(
 
     private val _searchMode = MutableStateFlow(SearchMode.LIST_RESULTS)
     val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
-
 
     private val _navigationEvent = Channel<NavigationEvent>()
     val navigationEvent = _navigationEvent.receiveAsFlow()
@@ -83,13 +90,13 @@ class SearchViewModel @Inject constructor(
             _searchMode.value = SearchMode.LIST_RESULTS
         }
     }
+
     fun onSuggestionClicked(suggestion: PlaceSuggestion) {
         viewModelScope.launch {
             _isLoading.value = true
             val result = getPlaceDetailsUseCase(suggestion.placeId)
             result.onSuccess { details ->
                 _selectedPlaceDetails.value = details
-                _searchMode.value = SearchMode.MAP_FOCUS
                 _searchQuery.value = details.name
                 _suggestions.value = emptyList()
                 _navigationEvent.send(
@@ -106,25 +113,56 @@ class SearchViewModel @Inject constructor(
         _searchMode.value = SearchMode.LIST_RESULTS
     }
 
-    fun onMapTapped(lat:Double, lng: Double) {
+    fun onMapTapped(lat: Double, lng: Double) {
         viewModelScope.launch {
             if (searchMode.value == SearchMode.LIST_RESULTS) {
                 _searchMode.value = SearchMode.MAP_FOCUS
                 _searchQuery.value = ""
                 _suggestions.value = emptyList()
+                _selectedPlaceDetails.value = null
             } else {
-                _selectedPlaceDetails.value = PlaceDetails("Ubicación Seleccionada", latitude = lat, longitude = lng)
-                /*// Toques subsecuentes mientras el mapa está en foco: selecciona el punto.
-                getAddressFromCoordinatesUseCase(latLng).onSuccess { address ->
-                    _selectedPlaceDetails.value = PlaceDetails(address, latLng)
+                _isLoading.value = true
+                getAddressFromCoordinatesUseCase(lat, lng).onSuccess { address ->
+                    _selectedPlaceDetails.value = PlaceDetails(address, lat, lng)
                 }.onFailure {
-                    _selectedPlaceDetails.value = PlaceDetails("Ubicación seleccionada", latLng)
-                }*/
+                    _selectedPlaceDetails.value = PlaceDetails("Ubicación sin nombre", lat, lng)
+                }
+                _isLoading.value = false
             }
         }
     }
 
-    fun onViewDetailsClicked() {
-        // TODO: Enviar evento de navegación a DetailScreen
+    fun onViewDetailsClicked(selectedPlaceDetails: PlaceDetails?) {
+        viewModelScope.launch {
+            selectedPlaceDetails?.let {
+                _navigationEvent.send(
+                    NavigationEvent.ToDetailScreen(it)
+                )
+            }
+        }
+    }
+
+    fun onMyLocationClicked() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            getCurrentLocationUseCase().onSuccess { location ->
+                onMapTapped(location.latitude, location.longitude)
+            }.onFailure { exception ->
+                if (exception is PermissionDeniedException) {
+                    _uiEvent.send(UiEvent.RequestLocationPermission)
+                } else {
+                    // Manejar otros errores de localización
+                }
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun onLocationPermissionResult(isGranted: Boolean) {
+        if (isGranted) {
+            onMyLocationClicked()
+        } else {
+            // Opcional: Mostrar un mensaje al usuario explicando que la función necesita permisos
+        }
     }
 }

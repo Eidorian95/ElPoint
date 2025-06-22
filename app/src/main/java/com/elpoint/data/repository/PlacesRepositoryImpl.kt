@@ -1,9 +1,10 @@
 package com.elpoint.data.repository
 
+import android.location.Geocoder
+import android.os.Build
 import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.domain.repository.PlacesRepository
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
@@ -15,7 +16,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class PlacesRepositoryImpl @Inject constructor(
-    private val placesClient: PlacesClient
+    private val placesClient: PlacesClient,
+    private val geocoder: Geocoder
 ) : PlacesRepository {
 
     override suspend fun searchPlaces(query: String): Result<List<PlaceSuggestion>> {
@@ -59,6 +61,35 @@ class PlacesRepositoryImpl @Inject constructor(
                     continuation.resume(Result.failure(Exception("Los detalles del lugar están incompletos.")))
                 }
             }.addOnFailureListener { exception -> continuation.resume(Result.failure(exception)) }
+        }
+    }
+
+    override suspend fun getAddressFromCoordinates(
+        lat: Double,
+        lng: Double
+    ): Result<String> {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                suspendCoroutine { continuation ->
+                    geocoder.getFromLocation(lat, lng, 1) { addresses ->
+                        if (addresses.isNotEmpty()) {
+                            continuation.resume(Result.success(addresses[0].getAddressLine(0) ?: "Dirección desconocida"))
+                        } else {
+                            continuation.resume(Result.failure(Exception("No se encontró dirección")))
+                        }
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    Result.success(addresses[0].getAddressLine(0) ?: "Dirección desconocida")
+                } else {
+                    Result.failure(Exception("No se encontró dirección"))
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

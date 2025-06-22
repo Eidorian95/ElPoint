@@ -23,13 +23,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -41,11 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,9 +52,9 @@ import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.ui.theme.ElPointTheme
 import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -64,17 +63,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 internal fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
-    onSuggestionClick: (PlaceSuggestion) -> Unit
 ) {
     val searchMode by viewModel.searchMode.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
     val selectedPlaceDetails by viewModel.selectedPlaceDetails.collectAsState()
     val focusManager = LocalFocusManager.current
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-34.5623139, -58.4771507), 4f)
-    }
 
     val mapWeight by animateFloatAsState(
         targetValue = if (searchMode == SearchMode.MAP_FOCUS) 0.8f else 0.2f, label = "mapWeight"
@@ -84,6 +78,39 @@ internal fun SearchScreen(
         label = "resultsWeight"
     )
 
+    ScreenContent(
+        searchQuery = searchQuery,
+        mapWeight = mapWeight,
+        selectedPlaceDetails = selectedPlaceDetails,
+        focusManager = focusManager,
+        resultsWeight = resultsWeight,
+        searchMode = searchMode,
+        suggestions = suggestions,
+        onQueryChanged = { viewModel.onQueryChanged(it) },
+        onSuggestionClicked = { viewModel.onSuggestionClicked(it) },
+        onSearchBarFocused = viewModel::onSearchBarFocused,
+        onViewDetailsClicked = { viewModel.onViewDetailsClicked(it) },
+        onMapTapped = { lat, lng -> viewModel.onMapTapped(lat, lng) },
+        onMyLocationClicked = viewModel::onMyLocationClicked
+    )
+}
+
+@Composable
+private fun ScreenContent(
+    searchQuery: String,
+    mapWeight: Float,
+    selectedPlaceDetails: PlaceDetails?,
+    focusManager: FocusManager,
+    resultsWeight: Float,
+    searchMode: SearchMode,
+    suggestions: List<PlaceSuggestion>,
+    onQueryChanged: (String) -> Unit,
+    onSuggestionClicked: (PlaceSuggestion) -> Unit,
+    onSearchBarFocused: () -> Unit,
+    onViewDetailsClicked: (PlaceDetails?) -> Unit,
+    onMapTapped: (Double, Double) -> Unit,
+    onMyLocationClicked: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -92,9 +119,9 @@ internal fun SearchScreen(
     ) {
         SearchBox(
             query = searchQuery,
-            onQueryChanged = viewModel::onQueryChanged,
+            onQueryChanged = { onQueryChanged(it) },
             onFocusChanged = { isFocused ->
-                if (isFocused) viewModel.onSearchBarFocused()
+                if (isFocused) onSearchBarFocused()
             })
 
         MapContainer(
@@ -102,8 +129,9 @@ internal fun SearchScreen(
             selectedPlaceDetails = selectedPlaceDetails,
             onMapTapped = { latLng ->
                 focusManager.clearFocus()
-                viewModel.onMapTapped(latLng.latitude, latLng.longitude)
-            }
+                onMapTapped(latLng.latitude, latLng.longitude)
+            },
+            onMyLocationClicked = { onMyLocationClicked() }
         )
 
         ResultsContainer(
@@ -111,8 +139,8 @@ internal fun SearchScreen(
             searchMode = searchMode,
             suggestions = suggestions,
             selectedPlaceDetails = selectedPlaceDetails,
-            onSuggestionClicked = viewModel::onSuggestionClicked,
-            onViewDetailsClicked = viewModel::onViewDetailsClicked
+            onSuggestionClicked = { onSuggestionClicked(it) },
+            onViewDetailsClicked = { onViewDetailsClicked(selectedPlaceDetails) }
         )
     }
 }
@@ -151,7 +179,7 @@ fun ResultsContainer(
     suggestions: List<PlaceSuggestion>,
     selectedPlaceDetails: PlaceDetails?,
     onSuggestionClicked: (PlaceSuggestion) -> Unit,
-    onViewDetailsClicked: () -> Unit,
+    onViewDetailsClicked: (PlaceDetails) -> Unit,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -177,7 +205,7 @@ fun ResultsContainer(
                 selectedPlaceDetails?.let { place ->
                     SelectedPlaceCard(
                         placeDetails = place,
-                        onViewDetailsClicked = onViewDetailsClicked
+                        onViewDetailsClicked = { onViewDetailsClicked(place) }
                     )
                 } ?: Box(
                     contentAlignment = Alignment.Center,
@@ -200,10 +228,10 @@ fun ResultsContainer(
 fun MapContainer(
     selectedPlaceDetails: PlaceDetails?,
     onMapTapped: (LatLng) -> Unit,
+    onMyLocationClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val cameraPositionState = rememberCameraPositionState()
-
     LaunchedEffect(selectedPlaceDetails) {
         selectedPlaceDetails?.let {
             cameraPositionState.animate(
@@ -223,11 +251,15 @@ fun MapContainer(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(MaterialTheme.shapes.medium)
+            .drawBehind {
+                drawRoundRect(color = Color.LightGray)
+            }
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            onMapClick = onMapTapped
+            onMapClick = onMapTapped,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false)
         ) {
             selectedPlaceDetails?.let {
                 Marker(
@@ -239,6 +271,15 @@ fun MapContainer(
                     )
                 )
             }
+        }
+        IconButton(
+            onClick = onMyLocationClicked,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small)
+        ) {
+            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Mi Ubicación")
         }
     }
 }
@@ -253,7 +294,10 @@ fun SelectedPlaceCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(enabled = true, onClick = {
+                onViewDetailsClicked()
+            }),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -325,6 +369,42 @@ fun SuggestionItem(
 @Composable
 fun GreetingPreview() {
     ElPointTheme {
-        SearchScreen() {}
+        val searchMode = SearchMode.MAP_FOCUS
+        ScreenContent(
+            searchQuery = "quis",
+            mapWeight = if (searchMode == SearchMode.LIST_RESULTS) 0.2f else 0.8f,
+            selectedPlaceDetails = null,
+            focusManager = LocalFocusManager.current,
+            resultsWeight = if (searchMode == SearchMode.LIST_RESULTS) 0.8f else 0.2f,
+            searchMode = searchMode,
+            suggestions = listOf(
+                PlaceSuggestion(
+                    placeId = "pri",
+                    primaryText = "pericula",
+                    secondaryText = "pulvinar"
+                ),
+                PlaceSuggestion(
+                    placeId = "pri2",
+                    primaryText = "pericula",
+                    secondaryText = "pulvinar"
+                ),
+                PlaceSuggestion(
+                    placeId = "pri3",
+                    primaryText = "pericula",
+                    secondaryText = "pulvinar"
+                ),
+                PlaceSuggestion(
+                    placeId = "pri4",
+                    primaryText = "pericula",
+                    secondaryText = "pulvinar"
+                ),
+            ),
+            onQueryChanged = {},
+            onSuggestionClicked = {},
+            onSearchBarFocused = {},
+            onViewDetailsClicked = {},
+            onMapTapped = { d: Double, d1: Double -> },
+            onMyLocationClicked = {}
+        )
     }
 }
