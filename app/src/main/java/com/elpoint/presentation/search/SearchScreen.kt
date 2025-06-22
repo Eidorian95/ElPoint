@@ -144,6 +144,7 @@ private fun SearchBox(
         shape = MaterialTheme.shapes.extraLarge
     )
 }
+
 @Composable
 fun ResultsContainer(
     searchMode: SearchMode,
@@ -165,10 +166,13 @@ fun ResultsContainer(
             SearchMode.LIST_RESULTS -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(items = suggestions, key = { it.placeId }) { suggestion ->
-                        SuggestionItem(suggestion = suggestion, onClick = { onSuggestionClicked(suggestion) })
+                        SuggestionItem(
+                            suggestion = suggestion,
+                            onClick = { onSuggestionClicked(suggestion) })
                     }
                 }
             }
+
             SearchMode.MAP_FOCUS -> {
                 selectedPlaceDetails?.let { place ->
                     SelectedPlaceCard(
@@ -177,9 +181,14 @@ fun ResultsContainer(
                     )
                 } ?: Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize().padding(16.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
                 ) {
-                    Text("Toca el mapa para seleccionar un punto", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Toca el mapa para seleccionar un punto",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             }
         }
@@ -233,53 +242,54 @@ fun MapContainer(
         }
     }
 }
+
 @Composable
 fun SelectedPlaceCard(
     placeDetails: PlaceDetails,
     onViewDetailsClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+
+    Row(
         modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = placeDetails.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "Lat: ${String.format("%.4f", placeDetails.latitude)}, Lon: ${String.format("%.4f", placeDetails.longitude)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            Button(onClick = onViewDetailsClicked) {
-                Text("Detalles")
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = "Ver detalles",
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
+        Icon(
+            imageVector = Icons.Outlined.Place,
+            contentDescription = "Lugar",
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = placeDetails.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Lat: ${
+                    String.format(
+                        "%.4f",
+                        placeDetails.latitude
+                    )
+                }, Lon: ${String.format("%.4f", placeDetails.longitude)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
 @Composable
-fun SuggestionItem(suggestion: PlaceSuggestion, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun SuggestionItem(
+    suggestion: PlaceSuggestion,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -295,13 +305,22 @@ fun SuggestionItem(suggestion: PlaceSuggestion, onClick: () -> Unit, modifier: M
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = suggestion.primaryText, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(
+                text = suggestion.primaryText,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
             if (suggestion.secondaryText.isNotEmpty()) {
-                Text(text = suggestion.secondaryText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = suggestion.secondaryText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
