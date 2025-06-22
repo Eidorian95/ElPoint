@@ -26,9 +26,7 @@ class SearchPointActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ElPointTheme {
-                SearchScreen{
-                    viewModel.onSuggestionClicked(it)
-                }
+                SearchScreen()
             }
         }
     }

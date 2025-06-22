@@ -51,6 +51,7 @@ import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.ui.theme.ElPointTheme
 import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.model.Place
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -173,7 +174,7 @@ fun ResultsContainer(
     suggestions: List<PlaceSuggestion>,
     selectedPlaceDetails: PlaceDetails?,
     onSuggestionClicked: (PlaceSuggestion) -> Unit,
-    onViewDetailsClicked: () -> Unit,
+    onViewDetailsClicked: (PlaceDetails) -> Unit,
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
@@ -199,7 +200,7 @@ fun ResultsContainer(
                 selectedPlaceDetails?.let { place ->
                     SelectedPlaceCard(
                         placeDetails = place,
-                        onViewDetailsClicked = onViewDetailsClicked
+                        onViewDetailsClicked = { onViewDetailsClicked(place) }
                     )
                 } ?: Box(
                     contentAlignment = Alignment.Center,
