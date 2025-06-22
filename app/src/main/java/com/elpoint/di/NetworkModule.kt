@@ -1,6 +1,7 @@
 package com.elpoint.di
 
 import android.content.Context
+import android.location.Geocoder
 import com.elpoint.data.remote.ApiService
 import com.elpoint.data.remote.RetrofitClient
 import com.google.android.libraries.places.api.Places
@@ -49,5 +50,11 @@ internal object NetworkModule {
     @Singleton
     fun providePlacesClient(@ApplicationContext context: Context): PlacesClient {
         return Places.createClient(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeocoder(@ApplicationContext context: Context): Geocoder {
+        return Geocoder(context)
     }
 }
