@@ -37,11 +37,16 @@ class SearchViewModel @Inject constructor(
     private val _suggestions = MutableStateFlow<List<PlaceSuggestion>>(emptyList())
     val suggestions: StateFlow<List<PlaceSuggestion>> = _suggestions.asStateFlow()
 
-    private val _selectedPlaceLocation = MutableStateFlow<PlaceDetails?>(null)
-    val selectedPlaceLocation: StateFlow<PlaceDetails?> = _selectedPlaceLocation.asStateFlow()
+    private val _selectedPlaceDetails = MutableStateFlow<PlaceDetails?>(null)
+    val selectedPlaceDetails: StateFlow<PlaceDetails?> = _selectedPlaceDetails.asStateFlow()
+
+    private val _searchMode = MutableStateFlow(SearchMode.LIST_RESULTS)
+    val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
+
 
     private val _navigationEvent = Channel<NavigationEvent>()
     val navigationEvent = _navigationEvent.receiveAsFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -74,14 +79,19 @@ class SearchViewModel @Inject constructor(
 
     fun onQueryChanged(newQuery: String) {
         _searchQuery.value = newQuery
+        if (_searchMode.value == SearchMode.MAP_FOCUS) {
+            _searchMode.value = SearchMode.LIST_RESULTS
+        }
     }
-
     fun onSuggestionClicked(suggestion: PlaceSuggestion) {
         viewModelScope.launch {
             _isLoading.value = true
             val result = getPlaceDetailsUseCase(suggestion.placeId)
             result.onSuccess { details ->
-                _selectedPlaceLocation.value = details
+                _selectedPlaceDetails.value = details
+                _searchMode.value = SearchMode.MAP_FOCUS
+                _searchQuery.value = details.name
+                _suggestions.value = emptyList()
                 _navigationEvent.send(
                     NavigationEvent.ToDetailScreen(details)
                 )
@@ -90,5 +100,31 @@ class SearchViewModel @Inject constructor(
             }
             _isLoading.value = false
         }
+    }
+
+    fun onSearchBarFocused() {
+        _searchMode.value = SearchMode.LIST_RESULTS
+    }
+
+    fun onMapTapped(lat:Double, lng: Double) {
+        viewModelScope.launch {
+            if (searchMode.value == SearchMode.LIST_RESULTS) {
+                _searchMode.value = SearchMode.MAP_FOCUS
+                _searchQuery.value = ""
+                _suggestions.value = emptyList()
+            } else {
+                _selectedPlaceDetails.value = PlaceDetails("Ubicación Seleccionada", latitude = lat, longitude = lng)
+                /*// Toques subsecuentes mientras el mapa está en foco: selecciona el punto.
+                getAddressFromCoordinatesUseCase(latLng).onSuccess { address ->
+                    _selectedPlaceDetails.value = PlaceDetails(address, latLng)
+                }.onFailure {
+                    _selectedPlaceDetails.value = PlaceDetails("Ubicación seleccionada", latLng)
+                }*/
+            }
+        }
+    }
+
+    fun onViewDetailsClicked() {
+        // TODO: Enviar evento de navegación a DetailScreen
     }
 }
