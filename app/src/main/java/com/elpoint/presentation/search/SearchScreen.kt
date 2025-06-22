@@ -23,9 +23,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -51,8 +53,8 @@ import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.ui.theme.ElPointTheme
 import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.model.Place
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -86,9 +88,10 @@ internal fun SearchScreen(
         suggestions = suggestions,
         onQueryChanged = { viewModel.onQueryChanged(it) },
         onSuggestionClicked = { viewModel.onSuggestionClicked(it) },
-        onSearchBarFocused =  viewModel::onSearchBarFocused,
+        onSearchBarFocused = viewModel::onSearchBarFocused,
         onViewDetailsClicked = { viewModel.onViewDetailsClicked(it) },
-        onMapTapped = { lat, lng -> viewModel.onMapTapped(lat, lng) }
+        onMapTapped = { lat, lng -> viewModel.onMapTapped(lat, lng) },
+        onMyLocationClicked = viewModel::onMyLocationClicked
     )
 }
 
@@ -106,6 +109,7 @@ private fun ScreenContent(
     onSearchBarFocused: () -> Unit,
     onViewDetailsClicked: (PlaceDetails?) -> Unit,
     onMapTapped: (Double, Double) -> Unit,
+    onMyLocationClicked: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -126,7 +130,8 @@ private fun ScreenContent(
             onMapTapped = { latLng ->
                 focusManager.clearFocus()
                 onMapTapped(latLng.latitude, latLng.longitude)
-            }
+            },
+            onMyLocationClicked = { onMyLocationClicked() }
         )
 
         ResultsContainer(
@@ -223,6 +228,7 @@ fun ResultsContainer(
 fun MapContainer(
     selectedPlaceDetails: PlaceDetails?,
     onMapTapped: (LatLng) -> Unit,
+    onMyLocationClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val cameraPositionState = rememberCameraPositionState()
@@ -252,7 +258,8 @@ fun MapContainer(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            onMapClick = onMapTapped
+            onMapClick = onMapTapped,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false)
         ) {
             selectedPlaceDetails?.let {
                 Marker(
@@ -264,6 +271,15 @@ fun MapContainer(
                     )
                 )
             }
+        }
+        IconButton(
+            onClick = onMyLocationClicked,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small)
+        ) {
+            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Mi Ubicación")
         }
     }
 }
@@ -356,10 +372,10 @@ fun GreetingPreview() {
         val searchMode = SearchMode.MAP_FOCUS
         ScreenContent(
             searchQuery = "quis",
-            mapWeight = if(searchMode == SearchMode.LIST_RESULTS) 0.2f else 0.8f,
+            mapWeight = if (searchMode == SearchMode.LIST_RESULTS) 0.2f else 0.8f,
             selectedPlaceDetails = null,
             focusManager = LocalFocusManager.current,
-            resultsWeight = if(searchMode == SearchMode.LIST_RESULTS) 0.8f else 0.2f,
+            resultsWeight = if (searchMode == SearchMode.LIST_RESULTS) 0.8f else 0.2f,
             searchMode = searchMode,
             suggestions = listOf(
                 PlaceSuggestion(
@@ -388,6 +404,7 @@ fun GreetingPreview() {
             onSearchBarFocused = {},
             onViewDetailsClicked = {},
             onMapTapped = { d: Double, d1: Double -> },
+            onMyLocationClicked = {}
         )
     }
 }

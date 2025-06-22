@@ -1,11 +1,13 @@
 package com.elpoint.presentation.search
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.elpoint.domain.model.PlaceDetails
@@ -21,14 +23,23 @@ class SearchPointActivity : ComponentActivity() {
     private val viewModel: SearchViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         viewModel.observeSearchPlaces()
         observeNavigationEvent()
+        observeUiEvent()
+
         enableEdgeToEdge()
         setContent {
             ElPointTheme {
                 SearchScreen()
             }
         }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        viewModel.onLocationPermissionResult(isGranted)
     }
 
     private fun observeNavigationEvent(){
@@ -51,6 +62,18 @@ class SearchPointActivity : ComponentActivity() {
         }
         Log.d("PLACE_DETAILS", details.toString())
         startActivity(intent)
+    }
+
+    private fun observeUiEvent(){
+        lifecycleScope.launch {
+            viewModel.uiEvent.collect { event ->
+                when (event) {
+                    is UiEvent.RequestLocationPermission -> {
+                        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                }
+            }
+        }
     }
 }
 

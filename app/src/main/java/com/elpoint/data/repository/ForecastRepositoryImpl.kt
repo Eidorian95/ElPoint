@@ -20,18 +20,19 @@ internal class ForecastRepositoryImpl @Inject constructor(
 ) : ForecastRepository {
 
     override suspend fun getForecast(lat: Double, lon: Double): Forecast {
-       val response = apiService.getForecast(
-                lat = lat,
-                lng = lon,
-                source = "sg",
-                params = "waterTemperature,wavePeriod,waveDirection,waveHeight,windSpeed,windDirection,gust"
+        val response = apiService.getForecast(
+            lat = lat,
+            lng = lon,
+            source = "sg",
+            params = "waterTemperature,wavePeriod,waveDirection,waveHeight,windSpeed,windDirection,gust"
         )
-       // val response = readJsonFromAssets(context, "forecast_mock.json")
+        // val response = readJsonFromAssets(context, "forecast_mock.json")
         return response.toDomainModel()
     }
 }
+
 fun readJsonFromAssets(context: Context, fileName: String): ForecastResponse {
-    val json =  context.assets.open(fileName).bufferedReader().use { it.readText() }
+    val json = context.assets.open(fileName).bufferedReader().use { it.readText() }
     val gson = Gson()
     return gson.fromJson(json, ForecastResponse::class.java)
 }
@@ -56,9 +57,11 @@ private fun List<HoursDto>.toDomainModel(): List<Hour> {
         )
     }
 }
+
 private fun String.toZonedDateTimeUtc(): ZonedDateTime {
     return ZonedDateTime.parse(this, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }
+
 private fun ZonedDateTime.toLocalZoned(): ZonedDateTime {
     return this.withZoneSameInstant(ZoneId.of("America/Argentina/Buenos_Aires"))
 }

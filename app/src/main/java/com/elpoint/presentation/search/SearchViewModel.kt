@@ -2,11 +2,14 @@ package com.elpoint.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elpoint.data.repository.PermissionDeniedException
 import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.domain.usecases.GetAddressFromCoordinatesUseCase
+import com.elpoint.domain.usecases.GetCurrentLocationUseCase
 import com.elpoint.domain.usecases.GetPlaceDetailsUseCase
 import com.elpoint.domain.usecases.SearchPlacesUseCase
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -23,15 +26,18 @@ import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
-class SearchViewModel @Inject constructor(
+internal class SearchViewModel @Inject constructor(
     private val searchPlacesUseCase: SearchPlacesUseCase,
     private val getAddressFromCoordinatesUseCase: GetAddressFromCoordinatesUseCase,
-    private val getPlaceDetailsUseCase: GetPlaceDetailsUseCase
+    private val getPlaceDetailsUseCase: GetPlaceDetailsUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase
 ) : ViewModel() {
 
     sealed class NavigationEvent {
         data class ToDetailScreen(val details: PlaceDetails) : NavigationEvent()
     }
+    private val _uiEvent = Channel<UiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -133,6 +139,30 @@ class SearchViewModel @Inject constructor(
                     NavigationEvent.ToDetailScreen(it)
                 )
             }
+        }
+    }
+
+    fun onMyLocationClicked() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            getCurrentLocationUseCase().onSuccess { location ->
+                onMapTapped(location.latitude, location.longitude)
+            }.onFailure { exception ->
+                if (exception is PermissionDeniedException) {
+                    _uiEvent.send(UiEvent.RequestLocationPermission)
+                } else {
+                    // Manejar otros errores de localización
+                }
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun onLocationPermissionResult(isGranted: Boolean) {
+        if (isGranted) {
+            onMyLocationClicked()
+        } else {
+            // Opcional: Mostrar un mensaje al usuario explicando que la función necesita permisos
         }
     }
 }

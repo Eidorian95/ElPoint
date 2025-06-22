@@ -4,6 +4,10 @@ import android.content.Context
 import android.location.Geocoder
 import com.elpoint.data.remote.ApiService
 import com.elpoint.data.remote.RetrofitClient
+import com.elpoint.data.repository.LocationRepositoryImpl
+import com.elpoint.domain.repository.LocationRepository
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.Firebase
@@ -56,5 +60,15 @@ internal object NetworkModule {
     @Singleton
     fun provideGeocoder(@ApplicationContext context: Context): Geocoder {
         return Geocoder(context)
+    }
+    @Provides
+    @Singleton
+    fun provideFusedLocationProviderClient(@ApplicationContext context: Context): FusedLocationProviderClient {
+        return LocationServices.getFusedLocationProviderClient(context)
+    }
+    @Provides
+    @Singleton
+    fun provideLocationRepository(fusedLocationProviderClient: FusedLocationProviderClient, @ApplicationContext context: Context): LocationRepository {
+        return LocationRepositoryImpl(fusedLocationProviderClient, context)
     }
 }
