@@ -33,9 +33,6 @@ internal class SearchViewModel @Inject constructor(
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase
 ) : ViewModel() {
 
-    sealed class NavigationEvent {
-        data class ToDetailScreen(val details: PlaceDetails) : NavigationEvent()
-    }
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -98,7 +95,6 @@ internal class SearchViewModel @Inject constructor(
             result.onSuccess { details ->
                 _selectedPlaceDetails.value = details
                 _searchQuery.value = details.name
-                _suggestions.value = emptyList()
                 _navigationEvent.send(
                     NavigationEvent.ToDetailScreen(details)
                 )
@@ -118,7 +114,6 @@ internal class SearchViewModel @Inject constructor(
             if (searchMode.value == SearchMode.LIST_RESULTS) {
                 _searchMode.value = SearchMode.MAP_FOCUS
                 _searchQuery.value = ""
-                _suggestions.value = emptyList()
                 _selectedPlaceDetails.value = null
             } else {
                 _isLoading.value = true

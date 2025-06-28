@@ -9,7 +9,7 @@ import javax.inject.Inject
 class SearchPlacesUseCase @Inject constructor(
     private val placesRepository: PlacesRepository
 ) {
-    suspend operator fun invoke(query: String): Flow<Result<List<PlaceSuggestion>>> = flow {
+    operator fun invoke(query: String): Flow<Result<List<PlaceSuggestion>>> = flow {
         emit(placesRepository.searchPlaces(query))
     }
 }
