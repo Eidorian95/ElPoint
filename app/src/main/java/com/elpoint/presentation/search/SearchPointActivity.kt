@@ -15,7 +15,6 @@ import com.elpoint.presentation.detail.DetailActivity
 import com.elpoint.ui.theme.ElPointTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlin.getValue
 
 
 @AndroidEntryPoint
@@ -46,7 +45,7 @@ class SearchPointActivity : ComponentActivity() {
         lifecycleScope.launch {
             viewModel.navigationEvent.collect { event ->
                 when (event) {
-                    is SearchViewModel.NavigationEvent.ToDetailScreen -> {
+                    is NavigationEvent.ToDetailScreen -> {
                         goToDetailScreen(event.details)
                     }
                 }

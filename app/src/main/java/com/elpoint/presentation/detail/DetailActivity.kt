@@ -22,21 +22,8 @@ class DetailActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ElPointTheme {
-                    val state = viewModel.state.collectAsState()
-                    when (val value = state.value) {
-                        Loading -> {
-                            Text(text = "Loading")
-                        }
-
-                        is Success -> {
-                            DetailInformationScreen(value.forecast)
-                        }
-
-                        else -> {
-                            Text(text = "Error")
-                        }
-                    }
-                }
+                DetailInformationScreen()
             }
+        }
     }
 }
