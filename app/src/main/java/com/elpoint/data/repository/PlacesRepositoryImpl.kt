@@ -1,7 +1,9 @@
 package com.elpoint.data.repository
 
-import android.location.Geocoder
+import android.content.Context
 import android.os.Build
+import com.elpoint.R
+import com.elpoint.data.remote.GooglePlacesApiService
 import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
 import com.elpoint.domain.repository.PlacesRepository
@@ -11,13 +13,17 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import retrofit2.Response
+
 
 class PlacesRepositoryImpl @Inject constructor(
     private val placesClient: PlacesClient,
-    private val geocoder: Geocoder
+    private val apiService: GooglePlacesApiService,
+    @ApplicationContext private val context: Context
 ) : PlacesRepository {
 
     override suspend fun searchPlaces(query: String): Result<List<PlaceSuggestion>> {
@@ -52,6 +58,7 @@ class PlacesRepositoryImpl @Inject constructor(
                 val place = response.place
                 if (place.location != null && place.displayName != null) {
                     val details = PlaceDetails(
+                        id = place.id ?: "",
                         name = place.displayName ?: "",
                         latitude = place.location?.latitude ?: 0.0 ,
                         longitude = place.location?.longitude ?: 0.0
@@ -64,32 +71,26 @@ class PlacesRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAddressFromCoordinates(
-        lat: Double,
-        lng: Double
-    ): Result<String> {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                suspendCoroutine { continuation ->
-                    geocoder.getFromLocation(lat, lng, 1) { addresses ->
-                        if (addresses.isNotEmpty()) {
-                            continuation.resume(Result.success(addresses[0].getAddressLine(0) ?: "Dirección desconocida"))
-                        } else {
-                            continuation.resume(Result.failure(Exception("No se encontró dirección")))
-                        }
-                    }
-                }
-            } else {
-                @Suppress("DEPRECATION")
-                val addresses = geocoder.getFromLocation(lat, lng, 1)
-                if (!addresses.isNullOrEmpty()) {
-                    Result.success(addresses[0].getAddressLine(0) ?: "Dirección desconocida")
-                } else {
-                    Result.failure(Exception("No se encontró dirección"))
-                }
+    override suspend fun getPlaceFromCoordinates(lat: Double, lng: Double): Result<PlaceDetails> {
+        try {
+            val response = apiService.reverseGeocode(
+                latlng = "$lat, $lng",
+                apiKey = context.getString(R.string.google_api_key)
+            )
+            if (response.isSuccessful && response.body()?.results?.isNotEmpty() == true) {
+                val firstResult = response.body()!!.results[0]
+                return Result.success(
+                    PlaceDetails(
+                        id = firstResult.placeId,
+                        name = firstResult.formattedAddress,
+                        latitude = firstResult.geometry.location.lat,
+                        longitude = firstResult.geometry.location.lng
+                    )
+                )
             }
+            return Result.failure(Exception("No se encontraron resultados: ${response.errorBody()?.string()}"))
         } catch (e: Exception) {
-            Result.failure(e)
+            return Result.failure(e)
         }
     }
 

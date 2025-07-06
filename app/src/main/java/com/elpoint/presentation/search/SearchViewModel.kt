@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.elpoint.data.repository.PermissionDeniedException
 import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.PlaceSuggestion
-import com.elpoint.domain.usecases.GetAddressFromCoordinatesUseCase
 import com.elpoint.domain.usecases.GetCurrentLocationUseCase
 import com.elpoint.domain.usecases.GetPlaceDetailsUseCase
 import com.elpoint.domain.usecases.SearchPlacesUseCase
+import com.elpoint.domain.usecases.geocoding.GetPlaceFromCoordinatesUseCase
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -28,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 internal class SearchViewModel @Inject constructor(
     private val searchPlacesUseCase: SearchPlacesUseCase,
-    private val getAddressFromCoordinatesUseCase: GetAddressFromCoordinatesUseCase,
+    private val getPlaceFromCoordinatesUseCase: GetPlaceFromCoordinatesUseCase,
     private val getPlaceDetailsUseCase: GetPlaceDetailsUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase
 ) : ViewModel() {
@@ -117,10 +117,10 @@ internal class SearchViewModel @Inject constructor(
                 _selectedPlaceDetails.value = null
             } else {
                 _isLoading.value = true
-                getAddressFromCoordinatesUseCase(lat, lng).onSuccess { address ->
-                    _selectedPlaceDetails.value = PlaceDetails(address, lat, lng)
+                getPlaceFromCoordinatesUseCase(lat, lng).onSuccess { placeDetails ->
+                    _selectedPlaceDetails.value = placeDetails
                 }.onFailure {
-                    _selectedPlaceDetails.value = PlaceDetails("Ubicación sin nombre", lat, lng)
+                    _selectedPlaceDetails.value = PlaceDetails("","Ubicación sin nombre", lat, lng)
                 }
                 _isLoading.value = false
             }

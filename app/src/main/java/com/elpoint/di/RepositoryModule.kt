@@ -5,9 +5,11 @@ import android.location.Geocoder
 import com.elpoint.data.repository.ForecastRepositoryImpl
 import com.elpoint.data.repository.PlacesRepositoryImpl
 import com.elpoint.data.repository.UserPointsRepositoryImpl
+import com.elpoint.data.repository.UserSpotsRepositoryImpl
 import com.elpoint.domain.repository.ForecastRepository
 import com.elpoint.domain.repository.PlacesRepository
 import com.elpoint.domain.repository.UserPointsRepository
+import com.elpoint.domain.repository.UserSpotsRepository
 import com.google.android.libraries.places.api.net.PlacesClient
 import dagger.Binds
 import dagger.Module
@@ -39,4 +41,11 @@ internal abstract class RepositoryModule {
     abstract fun bindPlaceRepository(
         impl: PlacesRepositoryImpl
     ): PlacesRepository
+
+
+    @Binds
+    @Singleton
+    abstract fun bindUserSpotsRepository(
+        userSpotsRepositoryImpl: UserSpotsRepositoryImpl
+    ): UserSpotsRepository
 }

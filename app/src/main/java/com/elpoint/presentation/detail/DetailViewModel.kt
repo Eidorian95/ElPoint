@@ -8,6 +8,9 @@ import com.elpoint.domain.model.Direction
 import com.elpoint.domain.model.Forecast
 import com.elpoint.domain.model.Hour
 import com.elpoint.domain.usecases.GetForecastUseCase
+import com.elpoint.domain.usecases.favorites.DeleteSpotUseCase
+import com.elpoint.domain.usecases.favorites.GetFavoriteStatusUseCase
+import com.elpoint.domain.usecases.favorites.SaveSpotUseCase
 import com.elpoint.presentation.state.DayForecastUI
 import com.elpoint.presentation.state.DirectionUI
 import com.elpoint.presentation.state.ForecastState
@@ -16,8 +19,11 @@ import com.elpoint.presentation.state.HourlyForecastUI
 import com.elpoint.presentation.state.WaveDataUI
 import com.elpoint.presentation.state.WindDataUI
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -25,24 +31,38 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 internal class DetailViewModel @Inject constructor(
     private val getForecastUseCase: GetForecastUseCase,
+    private val getFavoriteStatusUseCase: GetFavoriteStatusUseCase,
+    private val saveSpotUseCase: SaveSpotUseCase,
+    private val deleteSpotUseCase: DeleteSpotUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<ForecastState>(ForecastState.Loading)
-    val state: StateFlow<ForecastState> = _state
 
     private val lat = savedStateHandle.get<Double>("PLACE_LAT") ?: 0.0
     private val long = savedStateHandle.get<Double>("PLACE_LNG") ?: 0.0
     private val name = savedStateHandle.get<String>("PLACE_NAME") ?: ""
+    private val spotId = savedStateHandle.get<String>("PLACE_NAME") ?: ""
+
+    private val _state = MutableStateFlow<ForecastState>(ForecastState.Loading)
+    val state: StateFlow<ForecastState> = _state
+
+
+/*
+    private val isFavorite: StateFlow<Boolean> = spotId. { id ->
+        if (id != null) getFavoriteStatusUseCase(id) else flowOf(false)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+*/
+
 
     fun fetchForecast() {
         viewModelScope.launch {
             try {
                 val forecast = getForecastUseCase(lat = lat, lon = long)
-                _state.value = ForecastState.Success(forecast.toUIModel())
+                _state.value = ForecastState.Success(forecast.toUIModel(), false)
                 Log.d("FORESCAST RESPONSE", "${forecast.hours}")
             } catch (e: Exception) {
                 _state.value =

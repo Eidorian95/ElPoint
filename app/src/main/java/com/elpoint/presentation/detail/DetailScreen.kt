@@ -37,9 +37,7 @@ internal fun DetailInformationScreen(
             DetailInformationContent(
                 forecast = value.forecast,
                 isFavorite = false,
-            ) {
-
-            }
+            ) {}
         }
 
         else -> {
