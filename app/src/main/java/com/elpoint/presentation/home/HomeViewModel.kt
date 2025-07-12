@@ -2,6 +2,7 @@ package com.elpoint.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elpoint.domain.model.PlaceDetails
 import com.elpoint.domain.model.Point
 import com.elpoint.domain.usecases.GetUserPointsUseCase
 import com.elpoint.presentation.state.HomeState
@@ -9,8 +10,10 @@ import com.elpoint.presentation.state.PointUiModel
 import com.elpoint.presentation.state.UserPointsUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,8 +23,14 @@ internal class HomeViewModel @Inject constructor(
     private val getUserPoints: GetUserPointsUseCase,
 ) : ViewModel() {
 
+    sealed class HomeNavigationEvents{
+        data class ToDetailScreen(val details: PlaceDetails) : HomeNavigationEvents()
+    }
+
     private val _state = MutableStateFlow<HomeState>(HomeState.Loading)
     val state: StateFlow<HomeState> = _state
+    private val _navigationEvent = Channel<HomeNavigationEvents>()
+    val navigationEvent = _navigationEvent.receiveAsFlow()
 
     fun fetchPoints() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -31,6 +40,21 @@ internal class HomeViewModel @Inject constructor(
             } catch (e: Exception) { //TODO: not catch all exceptions
                 _state.value = HomeState.Error(e.message ?: "Unknown error")
             }
+        }
+    }
+
+    fun onPointClicked(point: PointUiModel) {
+        viewModelScope.launch {
+            _navigationEvent.send(
+                HomeNavigationEvents.ToDetailScreen(
+                    details = PlaceDetails(
+                        id = point.id,
+                        name = point.name,
+                        latitude = point.latitude,
+                        longitude = point.longitude
+                    )
+                )
+            )
         }
     }
 }

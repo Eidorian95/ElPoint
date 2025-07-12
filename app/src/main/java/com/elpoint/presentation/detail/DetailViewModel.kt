@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elpoint.domain.model.Direction
+import com.elpoint.domain.model.FavoriteSpot
 import com.elpoint.domain.model.Forecast
 import com.elpoint.domain.model.Hour
 import com.elpoint.domain.usecases.GetForecastUseCase
@@ -21,9 +22,8 @@ import com.elpoint.presentation.state.WindDataUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -42,32 +42,68 @@ internal class DetailViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    private val lat = savedStateHandle.get<Double>("PLACE_LAT") ?: 0.0
-    private val long = savedStateHandle.get<Double>("PLACE_LNG") ?: 0.0
+    private val lat = savedStateHandle.get<Double>("PLACE_LAT")
+    private val lon = savedStateHandle.get<Double>("PLACE_LNG")
     private val name = savedStateHandle.get<String>("PLACE_NAME") ?: ""
-    private val spotId = savedStateHandle.get<String>("PLACE_NAME") ?: ""
+    private val spotId = savedStateHandle.get<String>("SPOT_ID")
 
     private val _state = MutableStateFlow<ForecastState>(ForecastState.Loading)
-    val state: StateFlow<ForecastState> = _state
+    val state: StateFlow<ForecastState> = _state.asStateFlow()
 
+    fun loadInitialData() {
+        if (state.value !is ForecastState.Loading) return
 
-/*
-    private val isFavorite: StateFlow<Boolean> = spotId. { id ->
-        if (id != null) getFavoriteStatusUseCase(id) else flowOf(false)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-*/
+        if (lat != null && lon != null) {
+            fetchForecast(lat, lon)
+        } else {
+            _state.value = ForecastState.Error("Datos del spot incompletos.")
+        }
 
+        spotId?.let { id ->
+            observeFavoriteStatus(id)
+        }
+    }
 
-    fun fetchForecast() {
+    private fun fetchForecast(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
-                val forecast = getForecastUseCase(lat = lat, lon = long)
-                _state.value = ForecastState.Success(forecast.toUIModel(), false)
-                Log.d("FORESCAST RESPONSE", "${forecast.hours}")
+                val forecast = getForecastUseCase(lat = lat, lon = lon)
+                val currentIsFavorite = (_state.value as? ForecastState.Success)?.isFavorite ?: false
+                _state.value = ForecastState.Success(forecast.toUIModel(), currentIsFavorite)
+                Log.d("FORECAST_DETAIL_TEST", "Success fetching forecast: $forecast")
             } catch (e: Exception) {
-                _state.value =
-                    ForecastState.Error("Error fetching forecast: ${e.message}. Cause: ${e.cause}")
-                Log.d("FORESCAST ERROR", e.message.orEmpty())
+                _state.value = ForecastState.Error("Error fetching forecast: ${e.message}")
+                Log.d("FORECAST_DETAIL_TEST", "Error fetching forecast: $e")
+            }
+        }
+    }
+
+    private fun observeFavoriteStatus(id: String) {
+        viewModelScope.launch {
+            getFavoriteStatusUseCase(id).collect { isFavorite ->
+                val currentState = _state.value
+                if (currentState is ForecastState.Success) {
+                    _state.value = currentState.copy(isFavorite = isFavorite)
+                }
+            }
+        }
+    }
+
+    fun onFavoriteToggleClicked() {
+        viewModelScope.launch {
+            val currentState = _state.value as? ForecastState.Success ?: return@launch
+            val currentSpotId = spotId ?: return@launch
+
+            if (currentState.isFavorite) {
+                deleteSpotUseCase(currentSpotId)
+            } else {
+                val spotToSave = FavoriteSpot(
+                    id = currentSpotId,
+                    name = name,
+                    lat = lat ?: 0.0,
+                    lon = lon ?: 0.0
+                )
+                saveSpotUseCase(spotToSave)
             }
         }
     }

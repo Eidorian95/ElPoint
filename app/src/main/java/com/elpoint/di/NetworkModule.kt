@@ -5,7 +5,9 @@ import android.location.Geocoder
 import com.elpoint.data.remote.ApiService
 import com.elpoint.data.remote.GooglePlacesApiService
 import com.elpoint.data.repository.LocationRepositoryImpl
+import com.elpoint.data.repository.UserSpotsRepositoryImpl
 import com.elpoint.domain.repository.LocationRepository
+import com.elpoint.domain.repository.UserSpotsRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.libraries.places.api.Places
@@ -137,10 +139,9 @@ internal object NetworkModule {
     fun provideLocationRepository(fusedLocationProviderClient: FusedLocationProviderClient, @ApplicationContext context: Context): LocationRepository {
         return LocationRepositoryImpl(fusedLocationProviderClient, context)
     }
-/*
     @Provides
     @Singleton
     fun provideUserSpotsRepository(auth: FirebaseAuth, db: FirebaseDatabase): UserSpotsRepository {
         return UserSpotsRepositoryImpl(auth, db)
-    }*/
+    }
 }

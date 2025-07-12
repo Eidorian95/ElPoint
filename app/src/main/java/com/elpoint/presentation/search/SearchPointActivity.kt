@@ -58,6 +58,7 @@ class SearchPointActivity : ComponentActivity() {
             putExtra("PLACE_NAME", details.name)
             putExtra("PLACE_LAT", details.latitude)
             putExtra("PLACE_LNG", details.longitude)
+            putExtra("SPOT_ID", details.id)
         }
         Log.d("PLACE_DETAILS", details.toString())
         startActivity(intent)

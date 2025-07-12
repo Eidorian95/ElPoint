@@ -18,7 +18,8 @@ class DetailActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.fetchForecast()
+        viewModel.loadInitialData()
+
         enableEdgeToEdge()
         setContent {
             ElPointTheme {

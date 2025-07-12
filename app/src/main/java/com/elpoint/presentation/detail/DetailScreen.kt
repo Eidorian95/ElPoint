@@ -27,17 +27,19 @@ import com.elpoint.presentation.state.WindDataUI
 internal fun DetailInformationScreen(
     viewModel: DetailViewModel = hiltViewModel()
 ) {
-    val state = viewModel.state.collectAsState()
-    when (val value = state.value) {
+    val collectedState = viewModel.state.collectAsState()
+    when (val state = collectedState.value) {
         Loading -> {
             Text(text = "Loading")
         }
 
         is Success -> {
             DetailInformationContent(
-                forecast = value.forecast,
-                isFavorite = false,
-            ) {}
+                forecast = state.forecast,
+                isFavorite = state.isFavorite,
+            ) {
+                viewModel::onFavoriteToggleClicked
+            }
         }
 
         else -> {

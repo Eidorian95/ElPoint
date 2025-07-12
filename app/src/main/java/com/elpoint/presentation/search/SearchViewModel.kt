@@ -9,7 +9,6 @@ import com.elpoint.domain.usecases.GetCurrentLocationUseCase
 import com.elpoint.domain.usecases.GetPlaceDetailsUseCase
 import com.elpoint.domain.usecases.SearchPlacesUseCase
 import com.elpoint.domain.usecases.geocoding.GetPlaceFromCoordinatesUseCase
-import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel

@@ -55,7 +55,7 @@ private val CardShape = RoundedCornerShape(12.dp)
 internal fun HomeScreen(
     modifier: Modifier = Modifier,
     uiModel: UserPointsUiModel,
-    onPointClick: (String) -> Unit,
+    onPointClick: (PointUiModel) -> Unit,
     onBackClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSearchBarClick: () -> Unit
@@ -73,7 +73,7 @@ internal fun HomeScreen(
         items(uiModel.points, key = { "point_${it.id}" }) {
             SurfSpotCard(
                 point = it,
-                onPointClick = { onPointClick(it.id) }
+                onPointClick = { onPointClick(it) }
             )
 
         }
